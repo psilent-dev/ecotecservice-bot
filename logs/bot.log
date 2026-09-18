@@ -1,0 +1,806 @@
+2026-09-13 17:41:54 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-13 17:41:54 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-13 17:41:54 INFO apscheduler.scheduler: Added job "job_escalate_stale_requests" to job store "default"
+2026-09-13 17:41:54 INFO apscheduler.scheduler: Added job "job_inactive_clients" to job store "default"
+2026-09-13 17:41:54 INFO apscheduler.scheduler: Scheduler started
+2026-09-13 17:41:54 INFO services.scheduler: Планировщик запущен, tz=Europe/Moscow
+2026-09-13 17:41:54 INFO __main__: Бот запущен
+2026-09-13 17:41:54 INFO aiogram.dispatcher: Start polling
+2026-09-13 17:41:58 INFO aiogram.dispatcher: Run polling for bot @ecotecservice_bot id=8801171445 - 'Консультант Экотек-Сервис'
+2026-09-13 17:42:14 INFO aiogram.event: Update id=18831885 is handled. Duration 751 ms by bot id=8801171445
+2026-09-13 17:42:22 INFO aiogram.event: Update id=18831886 is handled. Duration 919 ms by bot id=8801171445
+2026-09-13 17:43:01 INFO aiogram.event: Update id=18831887 is handled. Duration 299 ms by bot id=8801171445
+2026-09-13 17:43:04 INFO aiogram.event: Update id=18831888 is handled. Duration 678 ms by bot id=8801171445
+2026-09-13 17:43:18 INFO aiogram.event: Update id=18831889 is handled. Duration 671 ms by bot id=8801171445
+2026-09-13 17:43:27 INFO aiogram.event: Update id=18831890 is handled. Duration 581 ms by bot id=8801171445
+2026-09-13 17:43:59 INFO aiogram.event: Update id=18831891 is handled. Duration 300 ms by bot id=8801171445
+2026-09-13 17:44:20 INFO aiogram.event: Update id=18831892 is handled. Duration 302 ms by bot id=8801171445
+2026-09-13 17:44:29 INFO aiogram.event: Update id=18831893 is handled. Duration 876 ms by bot id=8801171445
+2026-09-13 17:44:55 INFO aiogram.event: Update id=18831894 is handled. Duration 749 ms by bot id=8801171445
+2026-09-13 17:46:17 INFO aiogram.event: Update id=18831895 is handled. Duration 752 ms by bot id=8801171445
+2026-09-13 17:46:25 INFO aiogram.event: Update id=18831896 is handled. Duration 570 ms by bot id=8801171445
+2026-09-13 17:46:52 INFO aiogram.event: Update id=18831897 is handled. Duration 842 ms by bot id=8801171445
+2026-09-13 17:47:28 INFO aiogram.event: Update id=18831898 is handled. Duration 594 ms by bot id=8801171445
+2026-09-13 17:47:32 INFO aiogram.event: Update id=18831899 is handled. Duration 596 ms by bot id=8801171445
+2026-09-13 17:47:37 INFO aiogram.event: Update id=18831900 is handled. Duration 641 ms by bot id=8801171445
+2026-09-13 17:47:39 INFO aiogram.event: Update id=18831901 is handled. Duration 294 ms by bot id=8801171445
+2026-09-13 17:47:41 INFO aiogram.event: Update id=18831902 is handled. Duration 297 ms by bot id=8801171445
+2026-09-13 17:47:43 INFO aiogram.event: Update id=18831903 is handled. Duration 296 ms by bot id=8801171445
+2026-09-13 17:47:44 INFO aiogram.event: Update id=18831904 is handled. Duration 364 ms by bot id=8801171445
+2026-09-13 17:51:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 18:01:54 MSK)" (scheduled at 2026-09-13 17:51:54.821345+03:00)
+2026-09-13 17:51:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 18:01:54 MSK)" executed successfully
+2026-09-13 18:01:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 18:11:54 MSK)" (scheduled at 2026-09-13 18:01:54.821345+03:00)
+2026-09-13 18:01:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 18:11:54 MSK)" executed successfully
+2026-09-13 18:08:10 INFO aiogram.event: Update id=18831905 is handled. Duration 603 ms by bot id=8801171445
+2026-09-13 18:11:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 18:21:54 MSK)" (scheduled at 2026-09-13 18:11:54.821345+03:00)
+2026-09-13 18:11:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 18:21:54 MSK)" executed successfully
+2026-09-13 18:21:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 18:31:54 MSK)" (scheduled at 2026-09-13 18:21:54.821345+03:00)
+2026-09-13 18:21:55 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 18:31:54 MSK)" executed successfully
+2026-09-13 18:31:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 18:41:54 MSK)" (scheduled at 2026-09-13 18:31:54.821345+03:00)
+2026-09-13 18:31:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 18:41:54 MSK)" executed successfully
+2026-09-13 18:41:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 18:51:54 MSK)" (scheduled at 2026-09-13 18:41:54.821345+03:00)
+2026-09-13 18:41:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 18:51:54 MSK)" executed successfully
+2026-09-13 18:51:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 19:01:54 MSK)" (scheduled at 2026-09-13 18:51:54.821345+03:00)
+2026-09-13 18:51:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 19:01:54 MSK)" executed successfully
+2026-09-13 19:01:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 19:11:54 MSK)" (scheduled at 2026-09-13 19:01:54.821345+03:00)
+2026-09-13 19:01:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 19:11:54 MSK)" executed successfully
+2026-09-13 19:11:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 19:21:54 MSK)" (scheduled at 2026-09-13 19:11:54.821345+03:00)
+2026-09-13 19:11:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 19:21:54 MSK)" executed successfully
+2026-09-13 19:21:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 19:31:54 MSK)" (scheduled at 2026-09-13 19:21:54.821345+03:00)
+2026-09-13 19:21:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 19:31:54 MSK)" executed successfully
+2026-09-13 19:31:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 19:41:54 MSK)" (scheduled at 2026-09-13 19:31:54.821345+03:00)
+2026-09-13 19:31:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 19:41:54 MSK)" executed successfully
+2026-09-13 19:41:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 19:51:54 MSK)" (scheduled at 2026-09-13 19:41:54.821345+03:00)
+2026-09-13 19:41:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 19:51:54 MSK)" executed successfully
+2026-09-13 19:51:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 20:01:54 MSK)" (scheduled at 2026-09-13 19:51:54.821345+03:00)
+2026-09-13 19:51:55 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 20:01:54 MSK)" executed successfully
+2026-09-13 20:01:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 20:11:54 MSK)" (scheduled at 2026-09-13 20:01:54.821345+03:00)
+2026-09-13 20:01:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 20:11:54 MSK)" executed successfully
+2026-09-13 20:11:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 20:21:54 MSK)" (scheduled at 2026-09-13 20:11:54.821345+03:00)
+2026-09-13 20:11:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 20:21:54 MSK)" executed successfully
+2026-09-13 20:21:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 20:31:54 MSK)" (scheduled at 2026-09-13 20:21:54.821345+03:00)
+2026-09-13 20:21:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 20:31:54 MSK)" executed successfully
+2026-09-13 20:31:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 20:41:54 MSK)" (scheduled at 2026-09-13 20:31:54.821345+03:00)
+2026-09-13 20:31:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 20:41:54 MSK)" executed successfully
+2026-09-13 20:39:18 INFO aiogram.event: Update id=18831906 is handled. Duration 581 ms by bot id=8801171445
+2026-09-13 20:39:30 INFO aiogram.event: Update id=18831907 is handled. Duration 619 ms by bot id=8801171445
+2026-09-13 20:39:44 ERROR middlewares.db: Ошибка при обработке update, транзакция отменена
+Traceback (most recent call last):
+  File "E:\autoservice-bot\middlewares\db.py", line 30, in __call__
+    result = await handler(event, data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\admin_extra.py", line 143, in __call__
+    if db_user is None or not db_user.is_blocked or db_user.is_admin:
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\admin_extra.py", line 99, in __call__
+    if accepting_requests:
+               ^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 284, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 172, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 164, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 200, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 172, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 164, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 192, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\contacts.py", line 25, in show_contacts
+    await message.answer(
+    ...<7 lines>...
+    )
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\methods\base.py", line 82, in emit
+    return await bot(self)
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\bot.py", line 515, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\base.py", line 259, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\aiohttp.py", line 177, in make_request
+    response = self.check_response(
+        bot=bot,
+    ...<2 lines>...
+        content=raw_result,
+    )
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\base.py", line 121, in check_response
+    raise TelegramBadRequest(method=method, message=description)
+aiogram.exceptions.TelegramBadRequest: Telegram server says - Bad Request: inline keyboard button URL 'tel:+79064221772' is invalid: Wrong port number specified in the URL
+2026-09-13 20:39:44 ERROR __main__: Необработанная ошибка:
+Traceback (most recent call last):
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 58, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\fsm\middleware.py", line 43, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\middlewares\throttling.py", line 59, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\middlewares\db.py", line 30, in __call__
+    result = await handler(event, data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\admin_extra.py", line 143, in __call__
+    if db_user is None or not db_user.is_blocked or db_user.is_admin:
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\admin_extra.py", line 99, in __call__
+    if accepting_requests:
+               ^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 284, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 172, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 164, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 200, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 172, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 164, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 192, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\contacts.py", line 25, in show_contacts
+    await message.answer(
+    ...<7 lines>...
+    )
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\methods\base.py", line 82, in emit
+    return await bot(self)
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\bot.py", line 515, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\base.py", line 259, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\aiohttp.py", line 177, in make_request
+    response = self.check_response(
+        bot=bot,
+    ...<2 lines>...
+        content=raw_result,
+    )
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\base.py", line 121, in check_response
+    raise TelegramBadRequest(method=method, message=description)
+aiogram.exceptions.TelegramBadRequest: Telegram server says - Bad Request: inline keyboard button URL 'tel:+79064221772' is invalid: Wrong port number specified in the URL
+
+2026-09-13 20:39:44 INFO aiogram.event: Update id=18831908 is handled. Duration 575 ms by bot id=8801171445
+2026-09-13 20:41:33 ERROR middlewares.db: Ошибка при обработке update, транзакция отменена
+Traceback (most recent call last):
+  File "E:\autoservice-bot\middlewares\db.py", line 30, in __call__
+    result = await handler(event, data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\admin_extra.py", line 143, in __call__
+    if db_user is None or not db_user.is_blocked or db_user.is_admin:
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\admin_extra.py", line 99, in __call__
+    if accepting_requests:
+               ^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 284, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 172, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 164, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 200, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 172, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 164, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 192, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\contacts.py", line 25, in show_contacts
+    await message.answer(
+    ...<7 lines>...
+    )
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\methods\base.py", line 82, in emit
+    return await bot(self)
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\bot.py", line 515, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\base.py", line 259, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\aiohttp.py", line 177, in make_request
+    response = self.check_response(
+        bot=bot,
+    ...<2 lines>...
+        content=raw_result,
+    )
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\base.py", line 121, in check_response
+    raise TelegramBadRequest(method=method, message=description)
+aiogram.exceptions.TelegramBadRequest: Telegram server says - Bad Request: inline keyboard button URL 'tel:+79064221772' is invalid: Wrong port number specified in the URL
+2026-09-13 20:41:33 ERROR __main__: Необработанная ошибка:
+Traceback (most recent call last):
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 58, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\fsm\middleware.py", line 43, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\middlewares\throttling.py", line 59, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\middlewares\db.py", line 30, in __call__
+    result = await handler(event, data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\admin_extra.py", line 143, in __call__
+    if db_user is None or not db_user.is_blocked or db_user.is_admin:
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\admin_extra.py", line 99, in __call__
+    if accepting_requests:
+               ^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 284, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 172, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 164, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 200, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 172, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 164, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 192, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\contacts.py", line 25, in show_contacts
+    await message.answer(
+    ...<7 lines>...
+    )
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\methods\base.py", line 82, in emit
+    return await bot(self)
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\bot.py", line 515, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\base.py", line 259, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\aiohttp.py", line 177, in make_request
+    response = self.check_response(
+        bot=bot,
+    ...<2 lines>...
+        content=raw_result,
+    )
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\base.py", line 121, in check_response
+    raise TelegramBadRequest(method=method, message=description)
+aiogram.exceptions.TelegramBadRequest: Telegram server says - Bad Request: inline keyboard button URL 'tel:+79064221772' is invalid: Wrong port number specified in the URL
+
+2026-09-13 20:41:33 INFO aiogram.event: Update id=18831909 is handled. Duration 593 ms by bot id=8801171445
+2026-09-13 20:41:54 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 20:51:54 MSK)" (scheduled at 2026-09-13 20:41:54.821345+03:00)
+2026-09-13 20:41:54 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 20:51:54 MSK)" executed successfully
+2026-09-13 20:42:06 INFO aiogram.dispatcher: Polling stopped
+2026-09-13 20:42:06 INFO services.scheduler: Планировщик остановлен
+2026-09-13 20:42:06 INFO apscheduler.scheduler: Scheduler has been shut down
+2026-09-13 20:42:06 INFO __main__: Остановка завершена
+2026-09-13 20:42:06 ERROR aiogram.dispatcher: Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-09-13 20:42:06 WARNING aiogram.dispatcher: Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8801171445)
+2026-09-13 20:42:07 INFO aiogram.dispatcher: Polling stopped for bot @ecotecservice_bot id=8801171445 - 'Консультант Экотек-Сервис'
+2026-09-13 20:42:21 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-13 20:42:21 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-13 20:42:21 INFO apscheduler.scheduler: Added job "job_escalate_stale_requests" to job store "default"
+2026-09-13 20:42:21 INFO apscheduler.scheduler: Added job "job_inactive_clients" to job store "default"
+2026-09-13 20:42:21 INFO apscheduler.scheduler: Scheduler started
+2026-09-13 20:42:21 INFO services.scheduler: Планировщик запущен, tz=Europe/Moscow
+2026-09-13 20:42:21 INFO __main__: Бот запущен
+2026-09-13 20:42:21 INFO aiogram.dispatcher: Start polling
+2026-09-13 20:42:22 INFO aiogram.dispatcher: Run polling for bot @ecotecservice_bot id=8801171445 - 'Консультант Экотек-Сервис'
+2026-09-13 20:42:27 INFO aiogram.event: Update id=18831910 is handled. Duration 688 ms by bot id=8801171445
+2026-09-13 20:45:05 INFO aiogram.event: Update id=18831911 is handled. Duration 313 ms by bot id=8801171445
+2026-09-13 20:45:12 INFO aiogram.event: Update id=18831912 is handled. Duration 327 ms by bot id=8801171445
+2026-09-13 20:45:32 INFO aiogram.event: Update id=18831913 is handled. Duration 402 ms by bot id=8801171445
+2026-09-13 20:45:35 INFO aiogram.event: Update id=18831914 is handled. Duration 570 ms by bot id=8801171445
+2026-09-13 20:45:38 INFO aiogram.event: Update id=18831915 is handled. Duration 599 ms by bot id=8801171445
+2026-09-13 20:45:40 INFO aiogram.event: Update id=18831916 is handled. Duration 577 ms by bot id=8801171445
+2026-09-13 20:45:41 INFO aiogram.event: Update id=18831917 is handled. Duration 576 ms by bot id=8801171445
+2026-09-13 20:45:46 INFO aiogram.event: Update id=18831918 is handled. Duration 752 ms by bot id=8801171445
+2026-09-13 20:46:02 INFO aiogram.event: Update id=18831919 is handled. Duration 324 ms by bot id=8801171445
+2026-09-13 20:46:08 INFO aiogram.event: Update id=18831920 is handled. Duration 294 ms by bot id=8801171445
+2026-09-13 20:46:12 INFO aiogram.event: Update id=18831921 is handled. Duration 308 ms by bot id=8801171445
+2026-09-13 20:46:15 INFO aiogram.event: Update id=18831922 is handled. Duration 305 ms by bot id=8801171445
+2026-09-13 20:46:24 INFO aiogram.event: Update id=18831923 is handled. Duration 595 ms by bot id=8801171445
+2026-09-13 20:46:29 INFO aiogram.event: Update id=18831924 is handled. Duration 619 ms by bot id=8801171445
+2026-09-13 20:48:43 ERROR aiogram.dispatcher: Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientOSError: [WinError 1236] Подключение к сети было разорвано локальной системой
+2026-09-13 20:48:43 WARNING aiogram.dispatcher: Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8801171445)
+2026-09-13 20:49:05 ERROR aiogram.dispatcher: Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Превышен таймаут семафора]
+2026-09-13 20:49:05 WARNING aiogram.dispatcher: Sleep for 1.289604 seconds and try again... (tryings = 1, bot id = 8801171445)
+2026-09-13 20:49:16 INFO aiogram.dispatcher: Connection established (tryings = 2, bot id = 8801171445)
+2026-09-13 20:52:21 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 21:02:21 MSK)" (scheduled at 2026-09-13 20:52:21.693003+03:00)
+2026-09-13 20:52:21 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 21:02:21 MSK)" executed successfully
+2026-09-13 21:01:59 ERROR aiogram.dispatcher: Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientOSError: [WinError 1236] Подключение к сети было разорвано локальной системой
+2026-09-13 21:01:59 WARNING aiogram.dispatcher: Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8801171445)
+2026-09-13 21:02:21 ERROR aiogram.dispatcher: Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Превышен таймаут семафора]
+2026-09-13 21:02:21 WARNING aiogram.dispatcher: Sleep for 1.157777 seconds and try again... (tryings = 1, bot id = 8801171445)
+2026-09-13 21:02:21 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 21:12:21 MSK)" (scheduled at 2026-09-13 21:02:21.693003+03:00)
+2026-09-13 21:02:21 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 21:12:21 MSK)" executed successfully
+2026-09-13 21:02:32 INFO aiogram.dispatcher: Connection established (tryings = 2, bot id = 8801171445)
+2026-09-13 21:12:21 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 21:22:21 MSK)" (scheduled at 2026-09-13 21:12:21.693003+03:00)
+2026-09-13 21:12:21 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 21:22:21 MSK)" executed successfully
+2026-09-13 21:22:21 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 21:32:21 MSK)" (scheduled at 2026-09-13 21:22:21.693003+03:00)
+2026-09-13 21:22:21 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 21:32:21 MSK)" executed successfully
+2026-09-13 21:32:21 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 21:42:21 MSK)" (scheduled at 2026-09-13 21:32:21.693003+03:00)
+2026-09-13 21:32:21 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-13 21:42:21 MSK)" executed successfully
+2026-09-16 12:22:27 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-16 12:22:27 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-16 12:22:27 INFO apscheduler.scheduler: Added job "job_escalate_stale_requests" to job store "default"
+2026-09-16 12:22:27 INFO apscheduler.scheduler: Added job "job_inactive_clients" to job store "default"
+2026-09-16 12:22:27 INFO apscheduler.scheduler: Scheduler started
+2026-09-16 12:22:27 INFO services.scheduler: Планировщик запущен, tz=Europe/Moscow
+2026-09-16 12:22:27 INFO __main__: Бот запущен
+2026-09-16 12:22:27 INFO aiogram.dispatcher: Start polling
+2026-09-16 12:22:48 INFO aiogram.dispatcher: Polling stopped
+2026-09-16 12:22:48 INFO services.scheduler: Планировщик остановлен
+2026-09-16 12:22:48 INFO apscheduler.scheduler: Scheduler has been shut down
+2026-09-16 12:22:48 INFO __main__: Остановка завершена
+2026-09-16 12:23:59 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-16 12:23:59 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-16 12:23:59 INFO apscheduler.scheduler: Added job "job_escalate_stale_requests" to job store "default"
+2026-09-16 12:23:59 INFO apscheduler.scheduler: Added job "job_inactive_clients" to job store "default"
+2026-09-16 12:23:59 INFO apscheduler.scheduler: Scheduler started
+2026-09-16 12:23:59 INFO services.scheduler: Планировщик запущен, tz=Europe/Moscow
+2026-09-16 12:23:59 INFO __main__: Бот запущен
+2026-09-16 12:23:59 INFO aiogram.dispatcher: Start polling
+2026-09-16 12:24:00 INFO aiogram.dispatcher: Run polling for bot @ecotecservice_bot id=8801171445 - 'Консультант Экотек-Сервис'
+2026-09-16 12:24:00 INFO aiogram.event: Update id=18831925 is handled. Duration 538 ms by bot id=8801171445
+2026-09-16 12:24:48 ERROR aiogram.dispatcher: Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientOSError: [WinError 1236] Подключение к сети было разорвано локальной системой
+2026-09-16 12:24:48 WARNING aiogram.dispatcher: Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8801171445)
+2026-09-16 12:25:10 ERROR aiogram.dispatcher: Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Превышен таймаут семафора]
+2026-09-16 12:25:10 WARNING aiogram.dispatcher: Sleep for 1.115479 seconds and try again... (tryings = 1, bot id = 8801171445)
+2026-09-16 12:25:21 INFO aiogram.dispatcher: Connection established (tryings = 2, bot id = 8801171445)
+2026-09-16 12:29:15 ERROR aiogram.dispatcher: Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientOSError: [WinError 1236] Подключение к сети было разорвано локальной системой
+2026-09-16 12:29:15 WARNING aiogram.dispatcher: Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8801171445)
+2026-09-16 12:29:37 ERROR aiogram.dispatcher: Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Превышен таймаут семафора]
+2026-09-16 12:29:37 WARNING aiogram.dispatcher: Sleep for 1.351905 seconds and try again... (tryings = 1, bot id = 8801171445)
+2026-09-16 12:29:49 INFO aiogram.dispatcher: Connection established (tryings = 2, bot id = 8801171445)
+2026-09-16 12:32:47 ERROR middlewares.db: Ошибка при обработке update, транзакция отменена
+Traceback (most recent call last):
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\connector.py", line 1316, in _wrap_create_connection
+    return await self._loop.create_connection(*args, **kwargs, sock=sock)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1193, in create_connection
+    transport, protocol = await self._create_connection_transport(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        ssl_shutdown_timeout=ssl_shutdown_timeout)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1226, in _create_connection_transport
+    await waiter
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\asyncio\sslproto.py", line 581, in _on_handshake_complete
+    raise handshake_exc
+ConnectionResetError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\aiohttp.py", line 167, in make_request
+    async with session.post(
+               ~~~~~~~~~~~~^
+        url,
+        ^^^^
+        data=form,
+        ^^^^^^^^^^
+        timeout=self.timeout if timeout is None else timeout,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as resp:
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\client.py", line 1693, in __aenter__
+    self._resp: _RetType_co = await self._coro
+                              ^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\client.py", line 858, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\client.py", line 812, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\connector.py", line 657, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\connector.py", line 1242, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\connector.py", line 1620, in _create_direct_connection
+    raise last_exc
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\connector.py", line 1589, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\connector.py", line 1324, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [None]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\autoservice-bot\middlewares\db.py", line 30, in __call__
+    result = await handler(event, data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\admin_extra.py", line 144, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\admin_extra.py", line 100, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 284, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 172, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 164, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 200, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 172, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 164, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 192, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\fallback.py", line 26, in unknown_text
+    await message.answer(MENU_MAIN, reply_markup=menu_kb(user))
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\methods\base.py", line 82, in emit
+    return await bot(self)
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\bot.py", line 515, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\base.py", line 259, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\aiohttp.py", line 176, in make_request
+    raise TelegramNetworkError(method=method, message=f"{type(e).__name__}: {e}") from e
+aiogram.exceptions.TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [None]
+2026-09-16 12:32:47 ERROR __main__: Необработанная ошибка:
+Traceback (most recent call last):
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\connector.py", line 1316, in _wrap_create_connection
+    return await self._loop.create_connection(*args, **kwargs, sock=sock)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1193, in create_connection
+    transport, protocol = await self._create_connection_transport(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        ssl_shutdown_timeout=ssl_shutdown_timeout)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 1226, in _create_connection_transport
+    await waiter
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\asyncio\sslproto.py", line 581, in _on_handshake_complete
+    raise handshake_exc
+ConnectionResetError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\aiohttp.py", line 167, in make_request
+    async with session.post(
+               ~~~~~~~~~~~~^
+        url,
+        ^^^^
+        data=form,
+        ^^^^^^^^^^
+        timeout=self.timeout if timeout is None else timeout,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ) as resp:
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\client.py", line 1693, in __aenter__
+    self._resp: _RetType_co = await self._coro
+                              ^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\client.py", line 858, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\client.py", line 812, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\connector.py", line 657, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\connector.py", line 1242, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\connector.py", line 1620, in _create_direct_connection
+    raise last_exc
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\connector.py", line 1589, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiohttp\connector.py", line 1324, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [None]
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 58, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\fsm\middleware.py", line 43, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\middlewares\throttling.py", line 59, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\middlewares\db.py", line 30, in __call__
+    result = await handler(event, data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\admin_extra.py", line 144, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\admin_extra.py", line 100, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 284, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 172, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 164, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 200, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 172, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 164, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\router.py", line 192, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "E:\autoservice-bot\handlers\fallback.py", line 26, in unknown_text
+    await message.answer(MENU_MAIN, reply_markup=menu_kb(user))
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\methods\base.py", line 82, in emit
+    return await bot(self)
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\bot.py", line 515, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\base.py", line 259, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Uzbek\AppData\Local\Programs\Python\Python313\Lib\site-packages\aiogram\client\session\aiohttp.py", line 176, in make_request
+    raise TelegramNetworkError(method=method, message=f"{type(e).__name__}: {e}") from e
+aiogram.exceptions.TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [None]
+
+2026-09-16 12:32:48 INFO aiogram.event: Update id=18831926 is handled. Duration 2431 ms by bot id=8801171445
+2026-09-16 12:33:09 INFO aiogram.event: Update id=18831927 is handled. Duration 317 ms by bot id=8801171445
+2026-09-16 12:33:14 INFO aiogram.event: Update id=18831928 is handled. Duration 136 ms by bot id=8801171445
+2026-09-16 12:33:20 INFO aiogram.event: Update id=18831929 is handled. Duration 146 ms by bot id=8801171445
+2026-09-16 12:33:23 INFO aiogram.event: Update id=18831930 is handled. Duration 267 ms by bot id=8801171445
+2026-09-16 12:33:28 INFO aiogram.event: Update id=18831931 is handled. Duration 256 ms by bot id=8801171445
+2026-09-16 12:33:31 INFO aiogram.event: Update id=18831932 is handled. Duration 140 ms by bot id=8801171445
+2026-09-16 12:33:59 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-16 12:43:59 MSK)" (scheduled at 2026-09-16 12:33:59.237213+03:00)
+2026-09-16 12:33:59 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-16 12:43:59 MSK)" executed successfully
+2026-09-17 09:51:06 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-17 09:51:06 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-17 09:51:06 INFO apscheduler.scheduler: Added job "job_escalate_stale_requests" to job store "default"
+2026-09-17 09:51:06 INFO apscheduler.scheduler: Added job "job_inactive_clients" to job store "default"
+2026-09-17 09:51:06 INFO apscheduler.scheduler: Scheduler started
+2026-09-17 09:51:06 INFO services.scheduler: Планировщик запущен, tz=Europe/Moscow
+2026-09-17 09:51:06 INFO __main__: Бот запущен
+2026-09-17 09:51:06 INFO aiogram.dispatcher: Start polling
+2026-09-17 09:51:06 INFO aiogram.dispatcher: Run polling for bot @ecotecservice_bot id=8801171445 - 'Консультант Экотек-Сервис'
+2026-09-17 09:51:06 INFO aiogram.event: Update id=18831933 is handled. Duration 302 ms by bot id=8801171445
+2026-09-17 10:14:07 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-17 10:14:07 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-17 10:14:07 INFO apscheduler.scheduler: Added job "job_escalate_stale_requests" to job store "default"
+2026-09-17 10:14:07 INFO apscheduler.scheduler: Added job "job_inactive_clients" to job store "default"
+2026-09-17 10:14:07 INFO apscheduler.scheduler: Scheduler started
+2026-09-17 10:14:07 INFO services.scheduler: Планировщик запущен, tz=Europe/Moscow
+2026-09-17 10:14:07 INFO __main__: Бот запущен
+2026-09-17 10:14:07 INFO aiogram.dispatcher: Start polling
+2026-09-17 10:14:09 INFO aiogram.dispatcher: Polling stopped
+2026-09-17 10:14:09 INFO services.scheduler: Планировщик остановлен
+2026-09-17 10:14:09 INFO apscheduler.scheduler: Scheduler has been shut down
+2026-09-17 10:14:09 INFO __main__: Остановка завершена
+2026-09-17 10:16:29 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-17 10:16:29 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-17 10:16:29 INFO apscheduler.scheduler: Added job "job_escalate_stale_requests" to job store "default"
+2026-09-17 10:16:29 INFO apscheduler.scheduler: Added job "job_inactive_clients" to job store "default"
+2026-09-17 10:16:29 INFO apscheduler.scheduler: Scheduler started
+2026-09-17 10:16:29 INFO services.scheduler: Планировщик запущен, tz=Europe/Moscow
+2026-09-17 10:16:29 INFO __main__: Бот запущен
+2026-09-17 10:16:29 INFO aiogram.dispatcher: Start polling
+2026-09-17 10:16:29 INFO aiogram.dispatcher: Run polling for bot @ecotecservice_bot id=8801171445 - 'Консультант Экотек-Сервис'
+2026-09-17 10:16:30 INFO aiogram.event: Update id=18831935 is handled. Duration 0 ms by bot id=8801171445
+2026-09-17 10:16:30 INFO aiogram.event: Update id=18831936 is handled. Duration 0 ms by bot id=8801171445
+2026-09-17 10:16:30 INFO aiogram.event: Update id=18831937 is handled. Duration 0 ms by bot id=8801171445
+2026-09-17 10:16:30 INFO aiogram.event: Update id=18831938 is handled. Duration 0 ms by bot id=8801171445
+2026-09-17 10:16:30 INFO aiogram.event: Update id=18831934 is not handled. Duration 17 ms by bot id=8801171445
+2026-09-17 10:16:50 INFO aiogram.event: Update id=18831939 is handled. Duration 451 ms by bot id=8801171445
+2026-09-17 10:16:55 INFO aiogram.event: Update id=18831940 is handled. Duration 137 ms by bot id=8801171445
+2026-09-17 10:19:32 INFO aiogram.event: Update id=18831941 is handled. Duration 134 ms by bot id=8801171445
+2026-09-17 10:26:29 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 10:36:29 MSK)" (scheduled at 2026-09-17 10:26:29.658501+03:00)
+2026-09-17 10:26:29 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 10:36:29 MSK)" executed successfully
+2026-09-17 10:36:29 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 10:46:29 MSK)" (scheduled at 2026-09-17 10:36:29.658501+03:00)
+2026-09-17 10:36:29 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 10:46:29 MSK)" executed successfully
+2026-09-17 10:46:29 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 10:56:29 MSK)" (scheduled at 2026-09-17 10:46:29.658501+03:00)
+2026-09-17 10:46:29 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 10:56:29 MSK)" executed successfully
+2026-09-17 10:56:29 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 11:06:29 MSK)" (scheduled at 2026-09-17 10:56:29.658501+03:00)
+2026-09-17 10:56:29 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 11:06:29 MSK)" executed successfully
+2026-09-17 11:06:29 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 11:16:29 MSK)" (scheduled at 2026-09-17 11:06:29.658501+03:00)
+2026-09-17 11:06:29 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 11:16:29 MSK)" executed successfully
+2026-09-17 11:16:29 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 11:26:29 MSK)" (scheduled at 2026-09-17 11:16:29.658501+03:00)
+2026-09-17 11:16:29 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 11:26:29 MSK)" executed successfully
+2026-09-17 11:26:29 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 11:36:29 MSK)" (scheduled at 2026-09-17 11:26:29.658501+03:00)
+2026-09-17 11:26:29 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 11:36:29 MSK)" executed successfully
+2026-09-17 11:36:29 INFO apscheduler.executors.default: Running job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 11:46:29 MSK)" (scheduled at 2026-09-17 11:36:29.658501+03:00)
+2026-09-17 11:36:29 INFO apscheduler.executors.default: Job "job_escalate_stale_requests (trigger: interval[0:10:00], next run at: 2026-09-17 11:46:29 MSK)" executed successfully
+2026-09-18 12:02:23 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-18 12:02:23 INFO apscheduler.scheduler: Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-09-18 12:02:23 INFO apscheduler.scheduler: Added job "job_escalate_stale_requests" to job store "default"
+2026-09-18 12:02:23 INFO apscheduler.scheduler: Added job "job_inactive_clients" to job store "default"
+2026-09-18 12:02:23 INFO apscheduler.scheduler: Scheduler started
+2026-09-18 12:02:23 INFO services.scheduler: Планировщик запущен, tz=Europe/Moscow
+2026-09-18 12:02:23 INFO __main__: Бот запущен
+2026-09-18 12:02:23 INFO aiogram.dispatcher: Start polling
+2026-09-18 12:02:24 INFO aiogram.dispatcher: Run polling for bot @ecotecservice_bot id=8801171445 - 'Консультант Экотек-Сервис'
+2026-09-18 12:02:35 INFO aiogram.event: Update id=18831942 is handled. Duration 287 ms by bot id=8801171445
+2026-09-18 12:04:07 INFO aiogram.dispatcher: Polling stopped
+2026-09-18 12:04:07 INFO services.scheduler: Планировщик остановлен
+2026-09-18 12:04:07 INFO apscheduler.scheduler: Scheduler has been shut down
+2026-09-18 12:04:07 INFO __main__: Остановка завершена
+2026-09-18 12:04:07 ERROR aiogram.dispatcher: Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-09-18 12:04:07 WARNING aiogram.dispatcher: Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8801171445)
+2026-09-18 12:04:08 INFO aiogram.dispatcher: Polling stopped for bot @ecotecservice_bot id=8801171445 - 'Консультант Экотек-Сервис'
