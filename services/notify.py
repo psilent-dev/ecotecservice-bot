@@ -3,18 +3,16 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
-
 from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError, TelegramForbiddenError
-from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardMarkup
+from aiogram.types import ReplyKeyboardMarkup
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.repo import UserRepo
 
 logger = logging.getLogger(__name__)
 
-Keyboard = InlineKeyboardMarkup | ReplyKeyboardMarkup | None
+Keyboard = ReplyKeyboardMarkup | None
 
 
 async def notify_user(

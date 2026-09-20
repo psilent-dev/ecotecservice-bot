@@ -4,19 +4,19 @@ from __future__ import annotations
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import RequestType, ServiceCategory
 from database.repo import RequestRepo
 from handlers.booking import cancel_client_fsm, notify_admins_new_request
 from handlers.start import answer_with_menu, require_client
-from keyboards.inline import ConfirmCB, ServiceCB, confirm_kb, service_categories_kb
-from keyboards.reply import cancel_kb
+from keyboards.reply import cancel_kb, category_from_label, confirm_kb, service_categories_kb
 from states.client import PriceStates
 from texts import (
     BOOKING_INVALID_SERVICE,
     BTN_CANCEL,
+    BTN_CONFIRM,
     MENU_BUTTONS,
     PRICE_CANCELLED,
     PRICE_CAR_INFO,
@@ -43,28 +43,7 @@ async def price_entry(
         return
     await state.clear()
     await state.set_state(PriceStates.choose_service)
-    await message.answer(PRICE_CHOOSE_SERVICE, reply_markup=cancel_kb())
     await message.answer(PRICE_CHOOSE_SERVICE, reply_markup=service_categories_kb())
-
-
-@router.callback_query(PriceStates.choose_service, ServiceCB.filter(F.action == "choose"))
-async def price_choose_service(
-    callback: CallbackQuery,
-    callback_data: ServiceCB,
-    state: FSMContext,
-) -> None:
-    """Сохраняет категорию и запрашивает автомобиль."""
-    await callback.answer()
-    try:
-        category = ServiceCategory(callback_data.value)
-    except ValueError:
-        if callback.message:
-            await callback.message.answer(BOOKING_INVALID_SERVICE)
-        return
-    await state.update_data(service=category.value)
-    await state.set_state(PriceStates.enter_car)
-    if callback.message:
-        await callback.message.answer(PRICE_CAR_INFO, reply_markup=cancel_kb())
 
 
 @router.message(PriceStates.choose_service, F.text == BTN_CANCEL)
@@ -79,11 +58,20 @@ async def price_cancel_button(
     await cancel_client_fsm(message, state, session, PRICE_CANCELLED)
 
 
+@router.message(PriceStates.choose_service, F.text)
+async def price_choose_service(message: Message, state: FSMContext) -> None:
+    """Сохраняет категорию и запрашивает автомобиль."""
+    category = category_from_label(message.text or "")
+    if category is None:
+        await message.answer(BOOKING_INVALID_SERVICE, reply_markup=service_categories_kb())
+        return
+    await state.update_data(service=category.value)
+    await state.set_state(PriceStates.enter_car)
+    await message.answer(PRICE_CAR_INFO, reply_markup=cancel_kb())
+
+
 @router.message(PriceStates.enter_car, F.text)
-async def price_enter_car(
-    message: Message,
-    state: FSMContext,
-) -> None:
+async def price_enter_car(message: Message, state: FSMContext) -> None:
     """Сохраняет автомобиль и показывает сводку."""
     car_info = (message.text or "").strip()
     if not car_info:
@@ -99,43 +87,21 @@ async def price_enter_car(
         return
     await state.set_state(PriceStates.confirm)
     await message.answer(
-        PRICE_CONFIRM.format(
-            service=category.label(),
-            car=car_info,
-        ),
+        PRICE_CONFIRM.format(service=category.label(), car=car_info),
         reply_markup=confirm_kb(),
     )
 
 
-@router.callback_query(PriceStates.confirm, ConfirmCB.filter(F.action == "no"))
-async def price_confirm_no(
-    callback: CallbackQuery,
-    state: FSMContext,
-    session: AsyncSession,
-) -> None:
-    """Отмена запроса цены."""
-    await callback.answer()
-    if callback.message:
-        await cancel_client_fsm(
-            callback.message,
-            state,
-            session,
-            PRICE_CANCELLED,
-            tg_id=callback.from_user.id if callback.from_user else None,
-        )
-
-
-@router.callback_query(PriceStates.confirm, ConfirmCB.filter(F.action == "yes"))
+@router.message(PriceStates.confirm, F.text == BTN_CONFIRM)
 async def price_confirm_yes(
-    callback: CallbackQuery,
+    message: Message,
     state: FSMContext,
     session: AsyncSession,
 ) -> None:
     """Создаёт заявку PRICE и уведомляет администраторов."""
-    await callback.answer()
-    if callback.from_user is None or callback.message is None:
+    if message.from_user is None:
         return
-    user = await require_client(callback.message, session, callback.from_user)
+    user = await require_client(message, session, message.from_user)
     if user is None:
         await state.clear()
         return
@@ -144,7 +110,7 @@ async def price_confirm_yes(
         category = ServiceCategory(data["service"])
     except (KeyError, ValueError):
         await state.set_state(PriceStates.choose_service)
-        await callback.message.answer(BOOKING_INVALID_SERVICE, reply_markup=service_categories_kb())
+        await message.answer(BOOKING_INVALID_SERVICE, reply_markup=service_categories_kb())
         return
     car_info = str(data.get("car_info", "")).strip()
     request = await RequestRepo.create(
@@ -156,7 +122,7 @@ async def price_confirm_yes(
         car_info=car_info,
     )
     await notify_admins_new_request(
-        callback.message,
+        message,
         session,
         request_id=request.id,
         request_type=RequestType.PRICE,
@@ -167,7 +133,13 @@ async def price_confirm_yes(
     )
     await state.clear()
     await answer_with_menu(
-        callback.message,
+        message,
         user,
         PRICE_CREATED.format(request_id=request.id),
     )
+
+
+@router.message(PriceStates.confirm, F.text)
+async def price_confirm_hint(message: Message) -> None:
+    """Напоминает подтвердить кнопками."""
+    await message.answer(PRICE_CONFIRM.format(service="—", car="—"), reply_markup=confirm_kb())

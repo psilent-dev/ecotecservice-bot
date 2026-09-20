@@ -86,7 +86,7 @@ texts.py               # все пользовательские тексты
 main.py                # точка входа, polling, логи, error handler
 database/              # модели SQLAlchemy и репозитории
 handlers/              # клиентские и админ-сценарии
-keyboards/             # reply и inline-клавиатуры
+keyboards/             # reply-клавиатуры
 states/                # FSM
 filters/               # IsAdmin, IsOwner
 middlewares/           # сессия БД, антифлуд

@@ -6,14 +6,19 @@ import logging
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import RequestType, ServiceCategory, User
 from database.repo import RequestRepo, UserRepo
 from handlers.start import answer_with_menu, require_client, safe_send
-from keyboards.inline import ConfirmCB, ServiceCB, admin_request_actions_kb, confirm_kb, service_categories_kb
-from keyboards.reply import cancel_kb
+from keyboards.reply import (
+    admin_menu_kb,
+    cancel_kb,
+    category_from_label,
+    confirm_kb,
+    service_categories_kb,
+)
 from states.client import BookingStates
 from texts import (
     ADMIN_NEW_REQUEST,
@@ -28,6 +33,7 @@ from texts import (
     BOOKING_EMPTY_TEXT,
     BOOKING_INVALID_SERVICE,
     BTN_CANCEL,
+    BTN_CONFIRM,
     DISCOUNT_LINE_FREE_DIAG,
     DISCOUNT_LINE_LOYALTY,
     DISCOUNT_LINE_REFERRAL,
@@ -105,7 +111,7 @@ async def notify_admins_new_request(
     car_info: str | None,
     text: str,
 ) -> None:
-    """Рассылает новую заявку всем администраторам, ошибки доставки не прерывают сценарий."""
+    """Рассылает новую заявку всем администраторам."""
     if message.bot is None:
         logger.warning("Bot instance отсутствует, админы не уведомлены request_id=%s", request_id)
         return
@@ -117,14 +123,13 @@ async def notify_admins_new_request(
         car_info=car_info,
         text=text,
     )
-    markup = admin_request_actions_kb(request_id)
     admins = await UserRepo.get_all_admins(session)
     for admin in admins:
         await safe_send(
             message.bot,
             admin.tg_id,
             card,
-            reply_markup=markup,
+            reply_markup=admin_menu_kb(),
         )
 
 
@@ -165,48 +170,36 @@ async def booking_entry(
         return
     await state.clear()
     await state.set_state(BookingStates.choose_service)
-    await message.answer(BOOKING_CHOOSE_SERVICE, reply_markup=cancel_kb())
     await message.answer(BOOKING_CHOOSE_SERVICE, reply_markup=service_categories_kb())
 
 
-@router.callback_query(BookingStates.choose_service, ServiceCB.filter(F.action == "choose"))
-async def booking_choose_service(
-    callback: CallbackQuery,
-    callback_data: ServiceCB,
-    state: FSMContext,
-) -> None:
-    """Сохраняет категорию и запрашивает описание проблемы."""
-    await callback.answer()
-    try:
-        category = ServiceCategory(callback_data.value)
-    except ValueError:
-        if callback.message:
-            await callback.message.answer(BOOKING_INVALID_SERVICE)
-        return
-    await state.update_data(service=category.value)
-    await state.set_state(BookingStates.enter_problem)
-    if callback.message:
-        await callback.message.answer(BOOKING_COMMENT, reply_markup=cancel_kb())
-
-
+@router.message(BookingStates.choose_service, F.text == BTN_CANCEL)
 @router.message(BookingStates.enter_problem, F.text == BTN_CANCEL)
 @router.message(BookingStates.enter_car, F.text == BTN_CANCEL)
-@router.message(BookingStates.choose_service, F.text == BTN_CANCEL)
 @router.message(BookingStates.confirm, F.text == BTN_CANCEL)
 async def booking_cancel_button(
     message: Message,
     state: FSMContext,
     session: AsyncSession,
 ) -> None:
-    """Выход из записи по reply-кнопке отмены."""
+    """Выход из записи по кнопке отмены."""
     await cancel_client_fsm(message, state, session, BOOKING_CANCELLED)
 
 
+@router.message(BookingStates.choose_service, F.text)
+async def booking_choose_service(message: Message, state: FSMContext) -> None:
+    """Сохраняет категорию и запрашивает описание проблемы."""
+    category = category_from_label(message.text or "")
+    if category is None:
+        await message.answer(BOOKING_INVALID_SERVICE, reply_markup=service_categories_kb())
+        return
+    await state.update_data(service=category.value)
+    await state.set_state(BookingStates.enter_problem)
+    await message.answer(BOOKING_COMMENT, reply_markup=cancel_kb())
+
+
 @router.message(BookingStates.enter_problem, F.text)
-async def booking_enter_problem(
-    message: Message,
-    state: FSMContext,
-) -> None:
+async def booking_enter_problem(message: Message, state: FSMContext) -> None:
     """Сохраняет описание работ."""
     problem = (message.text or "").strip()
     if not problem:
@@ -252,35 +245,16 @@ async def booking_enter_car(
     )
 
 
-@router.callback_query(BookingStates.confirm, ConfirmCB.filter(F.action == "no"))
-async def booking_confirm_no(
-    callback: CallbackQuery,
-    state: FSMContext,
-    session: AsyncSession,
-) -> None:
-    """Отмена записи с inline-кнопки."""
-    await callback.answer()
-    if callback.message:
-        await cancel_client_fsm(
-            callback.message,
-            state,
-            session,
-            BOOKING_CANCELLED,
-            tg_id=callback.from_user.id if callback.from_user else None,
-        )
-
-
-@router.callback_query(BookingStates.confirm, ConfirmCB.filter(F.action == "yes"))
+@router.message(BookingStates.confirm, F.text == BTN_CONFIRM)
 async def booking_confirm_yes(
-    callback: CallbackQuery,
+    message: Message,
     state: FSMContext,
     session: AsyncSession,
 ) -> None:
     """Создаёт заявку, уведомляет админов и применяет скидки."""
-    await callback.answer()
-    if callback.from_user is None or callback.message is None:
+    if message.from_user is None:
         return
-    user = await require_client(callback.message, session, callback.from_user)
+    user = await require_client(message, session, message.from_user)
     if user is None:
         await state.clear()
         return
@@ -289,7 +263,7 @@ async def booking_confirm_yes(
         category = ServiceCategory(data["service"])
     except (KeyError, ValueError):
         await state.set_state(BookingStates.choose_service)
-        await callback.message.answer(BOOKING_INVALID_SERVICE, reply_markup=service_categories_kb())
+        await message.answer(BOOKING_INVALID_SERVICE, reply_markup=service_categories_kb())
         return
     problem = str(data.get("problem", "")).strip()
     car_info = str(data.get("car_info", "")).strip()
@@ -305,7 +279,7 @@ async def booking_confirm_yes(
     )
     await consume_booking_loyalty(session, user, category)
     await notify_admins_new_request(
-        callback.message,
+        message,
         session,
         request_id=request.id,
         request_type=RequestType.BOOKING,
@@ -316,7 +290,13 @@ async def booking_confirm_yes(
     )
     await state.clear()
     await answer_with_menu(
-        callback.message,
+        message,
         user,
         BOOKING_CREATED.format(request_id=request.id),
     )
+
+
+@router.message(BookingStates.confirm, F.text)
+async def booking_confirm_hint(message: Message) -> None:
+    """Напоминает подтвердить кнопками."""
+    await message.answer(BOOKING_CONFIRM.format(service="—", car="—", problem="—", discounts=""), reply_markup=confirm_kb())

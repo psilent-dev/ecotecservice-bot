@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 from aiogram import F, Router
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
 from database.models import User
 from database.repo import PromoRepo, UserRepo
 from handlers.start import menu_kb, require_client
-from keyboards.inline import NavCB, profile_kb
 from texts import (
     BONUS_DETAIL_FREE_DIAG,
     BONUS_DETAIL_LOYALTY,
@@ -24,7 +23,6 @@ from texts import (
     BONUSES_PROMO_ITEM,
     BONUSES_PROMO_UNLIMITED,
     MENU_BUTTONS,
-    MENU_MAIN,
     PROFILE_NO_PHONE,
     PROFILE_TEXT,
 )
@@ -98,44 +96,25 @@ async def build_bonuses_details(session: AsyncSession, user: User) -> str:
 
 @router.message(F.text == MENU_BUTTONS["profile"])
 async def show_profile(message: Message, session: AsyncSession) -> None:
-    """Показывает карточку профиля с inline-кнопкой бонусов."""
+    """Показывает карточку профиля."""
     if message.from_user is None:
         return
     user = await require_client(message, session, message.from_user)
     if user is None:
         return
     text = await build_profile_text(session, user)
-    await message.answer(text, reply_markup=profile_kb())
+    await message.answer(text, reply_markup=menu_kb(user))
 
 
-@router.callback_query(NavCB.filter(F.action == "bonuses"))
-async def show_bonuses(
-    callback: CallbackQuery,
-    session: AsyncSession,
-) -> None:
+@router.message(F.text == MENU_BUTTONS["bonuses"])
+async def show_bonuses(message: Message, session: AsyncSession) -> None:
     """Подробности по активным бонусам."""
-    await callback.answer()
-    if callback.from_user is None or callback.message is None:
+    if message.from_user is None:
         return
-    user = await require_client(callback.message, session, callback.from_user)
+    user = await require_client(message, session, message.from_user)
     if user is None:
         return
-    await callback.message.answer(
+    await message.answer(
         await build_bonuses_details(session, user),
-        reply_markup=profile_kb(),
+        reply_markup=menu_kb(user),
     )
-
-
-@router.callback_query(NavCB.filter(F.action == "back"))
-async def back_to_menu(
-    callback: CallbackQuery,
-    session: AsyncSession,
-) -> None:
-    """Возврат в главное меню с reply-клавиатурой."""
-    await callback.answer()
-    if callback.from_user is None or callback.message is None:
-        return
-    user = await require_client(callback.message, session, callback.from_user)
-    if user is None:
-        return
-    await callback.message.answer(MENU_MAIN, reply_markup=menu_kb(user))

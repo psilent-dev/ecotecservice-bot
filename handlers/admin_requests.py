@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import html
 import math
+import re
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Message
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -20,10 +21,21 @@ from database.models import ClientRequest, RequestStatus, User
 from database.repo import RequestRepo, UserRepo
 from filters.admin import IsAdmin
 from handlers.admin_entry import FsmModeFilter
-from keyboards.inline import PageCB, RequestCB, admin_request_actions_kb, client_dialog_kb, pagination_kb
-from keyboards.reply import ADMIN_BTN_ANSWERED, admin_menu_kb, cancel_kb, main_menu_kb
+from handlers.start import menu_kb
+from keyboards.reply import (
+    ADMIN_BTN_ANSWERED,
+    admin_menu_kb,
+    cancel_kb,
+    client_dialog_kb,
+    list_kb,
+    main_menu_kb,
+    numbered_label,
+    parse_numbered,
+    parse_trailing_num,
+    request_actions_kb,
+)
 from services.notify import notify_admins, notify_user
-from states.admin import AdminReplyStates
+from states.admin import AdminPickStates, AdminReplyStates
 from texts import (
     ADMIN_MENU_BUTTONS,
     ADMIN_REPLY_EMPTY,
@@ -38,7 +50,15 @@ from texts import (
     ADMIN_REQUESTS_EMPTY,
     ADMIN_REQUESTS_HEADER,
     ADMIN_TAKE_IN_PROGRESS,
+    BTN_BACK,
     BTN_CANCEL,
+    BTN_CLOSE,
+    BTN_MAIN_MENU,
+    BTN_PAGE_NEXT,
+    BTN_PAGE_PREV,
+    BTN_REOPEN,
+    BTN_REPLY,
+    BTN_REPLY_AGAIN,
     FSM_CANCELLED,
     PROFILE_NO_PHONE,
     QUESTION_CREATED,
@@ -49,14 +69,13 @@ from texts import (
 )
 
 PAGE_SIZE = 5
-SECTION_NEW = "req_new"
-SECTION_DONE = "req_done"
+_CLIENT_REPLY_RE = re.compile(rf"^{re.escape(BTN_REPLY_AGAIN)} №\d+")
+_CLIENT_CLOSE_RE = re.compile(rf"^{re.escape(BTN_CLOSE)} №\d+")
 
 router = Router(name="admin_requests")
 
 admin_router = Router(name="admin_requests_staff")
 admin_router.message.filter(IsAdmin())
-admin_router.callback_query.filter(IsAdmin())
 
 public_router = Router(name="admin_requests_public")
 
@@ -160,126 +179,149 @@ def _page_slice(
 
 async def render_request_page(
     message: Message,
+    state: FSMContext,
     session: AsyncSession,
     *,
     statuses: tuple[RequestStatus, ...],
-    section: str,
+    pick_state: State,
     page: int,
     empty_text: str,
-    header_count: int | None = None,
 ) -> None:
-    """Печатает страницу заявок с кнопками и пагинацией."""
+    """Печатает страницу заявок reply-кнопками."""
     items = await load_requests(session, statuses)
     if not items:
+        await state.clear()
         await message.answer(empty_text, reply_markup=admin_menu_kb())
         return
     chunk, current, total_pages = _page_slice(items, page)
-    count = header_count if header_count is not None else len(items)
-    await message.answer(ADMIN_REQUESTS_HEADER.format(count=count))
+    await state.set_state(pick_state)
+    await state.update_data(req_page=current, req_total=total_pages)
+    labels = [
+        numbered_label(
+            item.id,
+            REQUEST_TYPE_LABELS.get(item.type.value, item.type.value),
+        )
+        for item in chunk
+    ]
+    await message.answer(ADMIN_REQUESTS_HEADER.format(count=len(items)))
     for request in chunk:
-        await message.answer(
-            format_request_card(request, request.user),
-            reply_markup=admin_request_actions_kb(request.id),
-        )
-    if total_pages > 1:
-        await message.answer(
-            ADMIN_REQUESTS_HEADER.format(count=count),
-            reply_markup=pagination_kb(section, current, total_pages),
-        )
+        await message.answer(format_request_card(request, request.user))
+    await message.answer(
+        ADMIN_REQUESTS_HEADER.format(count=len(items)),
+        reply_markup=list_kb(labels, page=current, total_pages=total_pages),
+    )
 
 
-# ---------------------------------------------------------------------------
-# Админ: списки
-# ---------------------------------------------------------------------------
+async def _show_new(message: Message, state: FSMContext, session: AsyncSession, page: int) -> None:
+    """Страница новых заявок."""
+    await render_request_page(
+        message,
+        state,
+        session,
+        statuses=(RequestStatus.NEW,),
+        pick_state=AdminPickStates.requests_new,
+        page=page,
+        empty_text=ADMIN_REQUESTS_EMPTY,
+    )
+
+
+async def _show_done(message: Message, state: FSMContext, session: AsyncSession, page: int) -> None:
+    """Страница отвеченных и закрытых."""
+    await render_request_page(
+        message,
+        state,
+        session,
+        statuses=(RequestStatus.ANSWERED, RequestStatus.CLOSED),
+        pick_state=AdminPickStates.requests_done,
+        page=page,
+        empty_text=ADMIN_REQUESTS_HEADER.format(count=0),
+    )
 
 
 @admin_router.message(F.text == ADMIN_MENU_BUTTONS["requests"])
 async def list_new_requests(message: Message, session: AsyncSession, state: FSMContext) -> None:
     """Новые заявки."""
-    await state.clear()
-    items = await load_requests(session, (RequestStatus.NEW,))
-    await render_request_page(
-        message,
-        session,
-        statuses=(RequestStatus.NEW,),
-        section=SECTION_NEW,
-        page=1,
-        empty_text=ADMIN_REQUESTS_EMPTY,
-        header_count=len(items),
-    )
+    await _show_new(message, state, session, 1)
 
 
 @admin_router.message(F.text == ADMIN_BTN_ANSWERED)
 async def list_done_requests(message: Message, session: AsyncSession, state: FSMContext) -> None:
     """Отвеченные и закрытые заявки."""
+    await _show_done(message, state, session, 1)
+
+
+@admin_router.message(AdminPickStates.requests_new, F.text == BTN_BACK)
+@admin_router.message(AdminPickStates.requests_done, F.text == BTN_BACK)
+@admin_router.message(AdminPickStates.request_actions, F.text == BTN_BACK)
+async def requests_back(message: Message, state: FSMContext) -> None:
+    """Назад в админ-меню."""
     await state.clear()
-    items = await load_requests(
-        session,
-        (RequestStatus.ANSWERED, RequestStatus.CLOSED),
-    )
-    await render_request_page(
-        message,
-        session,
-        statuses=(RequestStatus.ANSWERED, RequestStatus.CLOSED),
-        section=SECTION_DONE,
-        page=1,
-        empty_text=ADMIN_REQUESTS_HEADER.format(count=0),
-        header_count=len(items),
-    )
+    await message.answer(FSM_CANCELLED, reply_markup=admin_menu_kb())
 
 
-@admin_router.callback_query(PageCB.filter(F.section.in_({SECTION_NEW, SECTION_DONE})))
-async def paginate_requests(
-    callback: CallbackQuery,
-    callback_data: PageCB,
-    session: AsyncSession,
-) -> None:
-    """Переключение страницы списка заявок."""
-    await callback.answer()
-    if callback.message is None:
+@admin_router.message(AdminPickStates.requests_new, F.text == BTN_PAGE_NEXT)
+async def new_next(message: Message, state: FSMContext, session: AsyncSession) -> None:
+    """Следующая страница новых."""
+    data = await state.get_data()
+    await _show_new(message, state, session, int(data.get("req_page", 1)) + 1)
+
+
+@admin_router.message(AdminPickStates.requests_new, F.text == BTN_PAGE_PREV)
+async def new_prev(message: Message, state: FSMContext, session: AsyncSession) -> None:
+    """Предыдущая страница новых."""
+    data = await state.get_data()
+    await _show_new(message, state, session, int(data.get("req_page", 1)) - 1)
+
+
+@admin_router.message(AdminPickStates.requests_done, F.text == BTN_PAGE_NEXT)
+async def done_next(message: Message, state: FSMContext, session: AsyncSession) -> None:
+    """Следующая страница отвеченных."""
+    data = await state.get_data()
+    await _show_done(message, state, session, int(data.get("req_page", 1)) + 1)
+
+
+@admin_router.message(AdminPickStates.requests_done, F.text == BTN_PAGE_PREV)
+async def done_prev(message: Message, state: FSMContext, session: AsyncSession) -> None:
+    """Предыдущая страница отвеченных."""
+    data = await state.get_data()
+    await _show_done(message, state, session, int(data.get("req_page", 1)) - 1)
+
+
+@admin_router.message(AdminPickStates.requests_new, F.text.regexp(r"^№\d+"))
+@admin_router.message(AdminPickStates.requests_done, F.text.regexp(r"^№\d+"))
+async def pick_request(message: Message, state: FSMContext, session: AsyncSession) -> None:
+    """Выбор заявки по кнопке №id."""
+    request_id = parse_numbered(message.text or "")
+    if request_id is None:
         return
-    if callback_data.section == SECTION_NEW:
-        statuses = (RequestStatus.NEW,)
-        empty = ADMIN_REQUESTS_EMPTY
-    else:
-        statuses = (RequestStatus.ANSWERED, RequestStatus.CLOSED)
-        empty = ADMIN_REQUESTS_HEADER.format(count=0)
-    items = await load_requests(session, statuses)
-    await render_request_page(
-        callback.message,
-        session,
-        statuses=statuses,
-        section=callback_data.section,
-        page=callback_data.page,
-        empty_text=empty,
-        header_count=len(items),
-    )
+    request = await get_request_with_user(session, request_id)
+    if request is None:
+        await message.answer(ADMIN_REQUEST_NOT_FOUND.format(id=request_id), reply_markup=admin_menu_kb())
+        await state.clear()
+        return
+    await state.set_state(AdminPickStates.request_actions)
+    await state.update_data(request_id=request.id)
+    await message.answer(format_request_card(request, request.user), reply_markup=request_actions_kb())
 
 
-@admin_router.callback_query(RequestCB.filter(F.action == "reply"))
+@admin_router.message(AdminPickStates.request_actions, F.text == BTN_REPLY)
 async def admin_start_reply(
-    callback: CallbackQuery,
-    callback_data: RequestCB,
+    message: Message,
     state: FSMContext,
     session: AsyncSession,
 ) -> None:
     """Запрашивает текст ответа администратора."""
-    await callback.answer()
-    request = await get_request_with_user(session, callback_data.request_id)
+    data = await state.get_data()
+    request_id = int(data["request_id"])
+    request = await get_request_with_user(session, request_id)
     if request is None:
-        if callback.message:
-            await callback.message.answer(
-                ADMIN_REQUEST_NOT_FOUND.format(id=callback_data.request_id)
-            )
+        await state.clear()
+        await message.answer(ADMIN_REQUEST_NOT_FOUND.format(id=request_id), reply_markup=admin_menu_kb())
         return
     await RequestRepo.update_status(session, request.id, RequestStatus.IN_PROGRESS)
     await state.set_state(AdminReplyStates.enter_reply)
     await state.update_data(mode="request", request_id=request.id)
-    if callback.message:
-        await callback.message.answer(
-            ADMIN_REPLY_PROMPT.format(id=request.id),
-            reply_markup=cancel_kb(),
-        )
+    await message.answer(ADMIN_REPLY_PROMPT.format(id=request.id), reply_markup=cancel_kb())
 
 
 @admin_router.message(AdminReplyStates.enter_reply, FsmModeFilter("request"), F.text == BTN_CANCEL)
@@ -311,18 +353,12 @@ async def admin_send_reply(
     request = await RequestRepo.set_reply(session, request_id, reply, admin.id)
     if request is None:
         await state.clear()
-        await message.answer(
-            ADMIN_REQUEST_NOT_FOUND.format(id=request_id),
-            reply_markup=admin_menu_kb(),
-        )
+        await message.answer(ADMIN_REQUEST_NOT_FOUND.format(id=request_id), reply_markup=admin_menu_kb())
         return
     request = await get_request_with_user(session, request_id)
     if request is None or request.user is None:
         await state.clear()
-        await message.answer(
-            ADMIN_REQUEST_NOT_FOUND.format(id=request_id),
-            reply_markup=admin_menu_kb(),
-        )
+        await message.answer(ADMIN_REQUEST_NOT_FOUND.format(id=request_id), reply_markup=admin_menu_kb())
         return
     await notify_user(
         message.bot,
@@ -332,102 +368,89 @@ async def admin_send_reply(
         session=session,
     )
     await state.clear()
-    await message.answer(
-        ADMIN_REPLY_SENT,
-        reply_markup=admin_menu_kb(),
-    )
+    await message.answer(ADMIN_REPLY_SENT, reply_markup=admin_menu_kb())
 
 
-@admin_router.callback_query(RequestCB.filter(F.action == "close"))
+@admin_router.message(AdminPickStates.request_actions, F.text == BTN_CLOSE)
 async def admin_close_request(
-    callback: CallbackQuery,
-    callback_data: RequestCB,
+    message: Message,
+    state: FSMContext,
     session: AsyncSession,
 ) -> None:
     """Закрывает заявку и уведомляет клиента."""
-    await callback.answer()
-    if callback.message is None or callback.message.bot is None:
+    if message.bot is None:
         return
-    request = await get_request_with_user(session, callback_data.request_id)
+    data = await state.get_data()
+    request_id = int(data["request_id"])
+    request = await get_request_with_user(session, request_id)
+    await state.clear()
     if request is None:
-        await callback.message.answer(
-            ADMIN_REQUEST_NOT_FOUND.format(id=callback_data.request_id)
-        )
+        await message.answer(ADMIN_REQUEST_NOT_FOUND.format(id=request_id), reply_markup=admin_menu_kb())
         return
     await RequestRepo.update_status(session, request.id, RequestStatus.CLOSED)
     if request.user is not None:
         await notify_user(
-            callback.message.bot,
+            message.bot,
             request.user.tg_id,
             ADMIN_REQUEST_CLOSED.format(request_id=request.id),
             session=session,
         )
-    await callback.message.answer(
+    await message.answer(
         ADMIN_REQUEST_CLOSED.format(request_id=request.id),
         reply_markup=admin_menu_kb(),
     )
 
 
-@admin_router.callback_query(RequestCB.filter(F.action == "reopen"))
+@admin_router.message(AdminPickStates.request_actions, F.text == BTN_REOPEN)
 async def admin_reopen_request(
-    callback: CallbackQuery,
-    callback_data: RequestCB,
+    message: Message,
+    state: FSMContext,
     session: AsyncSession,
 ) -> None:
     """Возвращает заявку в работу."""
-    await callback.answer()
-    request = await RequestRepo.update_status(
-        session,
-        callback_data.request_id,
-        RequestStatus.IN_PROGRESS,
-    )
+    data = await state.get_data()
+    request_id = int(data["request_id"])
+    request = await RequestRepo.update_status(session, request_id, RequestStatus.IN_PROGRESS)
+    await state.clear()
     if request is None:
-        if callback.message:
-            await callback.message.answer(
-                ADMIN_REQUEST_NOT_FOUND.format(id=callback_data.request_id)
-            )
+        await message.answer(ADMIN_REQUEST_NOT_FOUND.format(id=request_id), reply_markup=admin_menu_kb())
         return
-    if callback.message:
-        await callback.message.answer(
-            ADMIN_TAKE_IN_PROGRESS.format(id=request.id),
-            reply_markup=admin_menu_kb(),
-        )
+    await message.answer(
+        ADMIN_TAKE_IN_PROGRESS.format(id=request.id),
+        reply_markup=admin_menu_kb(),
+    )
 
 
-# ---------------------------------------------------------------------------
-# Клиент: ответить ещё / закрыть
-# ---------------------------------------------------------------------------
-
-
-@public_router.callback_query(RequestCB.filter(F.action == "reply"))
+@public_router.message(F.text.regexp(_CLIENT_REPLY_RE))
 async def client_followup_start(
-    callback: CallbackQuery,
-    callback_data: RequestCB,
+    message: Message,
     state: FSMContext,
     session: AsyncSession,
 ) -> None:
     """Клиент продолжает диалог по заявке."""
-    await callback.answer()
-    if callback.from_user is None or callback.message is None:
+    if message.from_user is None:
         return
-    request = await get_request_with_user(session, callback_data.request_id)
-    if request is None or request.user is None:
-        await callback.message.answer(
-            ADMIN_REQUEST_NOT_FOUND.format(id=callback_data.request_id)
-        )
+    request_id = parse_trailing_num(message.text or "")
+    if request_id is None:
         return
-    if request.user.tg_id != callback.from_user.id:
+    request = await get_request_with_user(session, request_id)
+    if request is None or request.user is None or request.user.tg_id != message.from_user.id:
+        await message.answer(ADMIN_REQUEST_NOT_FOUND.format(id=request_id or 0))
         return
     await state.set_state(ClientFollowupStates.enter_text)
     await state.update_data(followup_request_id=request.id)
-    await callback.message.answer(QUESTION_PROMPT, reply_markup=cancel_kb())
+    await message.answer(QUESTION_PROMPT, reply_markup=cancel_kb())
 
 
 @public_router.message(ClientFollowupStates.enter_text, F.text == BTN_CANCEL)
-async def client_followup_cancel(message: Message, state: FSMContext) -> None:
+async def client_followup_cancel(message: Message, state: FSMContext, session: AsyncSession) -> None:
     """Клиент отменяет продолжение переписки."""
     await state.clear()
-    await message.answer(FSM_CANCELLED, reply_markup=main_menu_kb())
+    if message.from_user is None:
+        await message.answer(FSM_CANCELLED, reply_markup=main_menu_kb())
+        return
+    user = await UserRepo.get_by_tg_id(session, message.from_user.id)
+    await message.answer(FSM_CANCELLED, reply_markup=menu_kb(user) if user else main_menu_kb())
 
 
 @public_router.message(ClientFollowupStates.enter_text, F.text)
@@ -461,7 +484,7 @@ async def client_followup_text(
         message.bot,
         session,
         format_request_card(request, request.user),
-        reply_markup=admin_request_actions_kb(request.id),
+        reply_markup=admin_menu_kb(),
     )
     await state.clear()
     await message.answer(
@@ -470,26 +493,34 @@ async def client_followup_text(
     )
 
 
-@public_router.callback_query(RequestCB.filter(F.action == "close"))
-async def client_close_request(
-    callback: CallbackQuery,
-    callback_data: RequestCB,
-    session: AsyncSession,
-) -> None:
+@public_router.message(F.text.regexp(_CLIENT_CLOSE_RE))
+async def client_close_request(message: Message, session: AsyncSession) -> None:
     """Клиент закрывает свою заявку."""
-    await callback.answer()
-    if callback.from_user is None or callback.message is None:
+    if message.from_user is None:
         return
-    request = await get_request_with_user(session, callback_data.request_id)
-    if request is None or request.user is None:
+    request_id = parse_trailing_num(message.text or "")
+    if request_id is None:
         return
-    if request.user.tg_id != callback.from_user.id:
+    request = await get_request_with_user(session, request_id)
+    if request is None or request.user is None or request.user.tg_id != message.from_user.id:
         return
     await RequestRepo.update_status(session, request.id, RequestStatus.CLOSED)
-    await callback.message.answer(
+    user = await UserRepo.get_by_tg_id(session, message.from_user.id)
+    await message.answer(
         ADMIN_REQUEST_CLOSED.format(request_id=request.id),
-        reply_markup=main_menu_kb(),
+        reply_markup=menu_kb(user) if user else main_menu_kb(),
     )
+
+
+@public_router.message(F.text == BTN_MAIN_MENU)
+async def client_dialog_menu(message: Message, state: FSMContext, session: AsyncSession) -> None:
+    """С диалога заявки — в главное меню."""
+    await state.clear()
+    if message.from_user is None:
+        await message.answer(FSM_CANCELLED, reply_markup=main_menu_kb())
+        return
+    user = await UserRepo.get_by_tg_id(session, message.from_user.id)
+    await message.answer(FSM_CANCELLED, reply_markup=menu_kb(user) if user else main_menu_kb())
 
 
 router.include_router(admin_router)

@@ -13,7 +13,7 @@ from config import settings
 from database.base import async_session_maker
 from database.models import ClientRequest, User
 from database.repo import RequestRepo
-from keyboards.inline import admin_request_actions_kb
+from keyboards.reply import admin_menu_kb
 from services.notify import notify_admins, notify_user
 from texts import (
     ADMIN_ESCALATION_120,
@@ -92,7 +92,7 @@ async def job_escalate_stale_requests() -> None:
                 _bot,
                 session,
                 text,
-                reply_markup=admin_request_actions_kb(request.id),
+                reply_markup=admin_menu_kb(),
             )
             _pinged_30.add(request.id)
 
@@ -107,7 +107,7 @@ async def job_escalate_stale_requests() -> None:
                 _bot,
                 session,
                 text,
-                reply_markup=admin_request_actions_kb(request.id),
+                reply_markup=admin_menu_kb(),
             )
             _pinged_120.add(request.id)
             _pinged_30.add(request.id)
