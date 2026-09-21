@@ -1,302 +1,328 @@
-"""FSM записи на обслуживание."""
+"""Mini App (web_app_data) и быстрая запись в чате."""
 
 from __future__ import annotations
 
+import json
 import logging
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import RequestType, ServiceCategory, User
+from database.models import RequestSource, RequestType, User
 from database.repo import RequestRepo, UserRepo
-from handlers.start import answer_with_menu, require_client, safe_send
-from keyboards.reply import (
-    admin_menu_kb,
+from handlers.start import (
+    ack_event,
+    answer_with_menu,
+    get_or_create_user,
+    require_client,
+    show_screen,
+)
+from keyboards.inline import (
+    MenuCB,
+    admin_request_actions_kb,
     cancel_kb,
-    category_from_label,
-    confirm_kb,
-    service_categories_kb,
+    skip_cancel_kb,
 )
-from states.client import BookingStates
+from keyboards.reply import phone_request_kb
+from services.notify import notify_admins
+from states.client import QuickBookingStates
 from texts import (
-    ADMIN_NEW_REQUEST,
-    ADMIN_REQUEST_NO_CAR,
-    ADMIN_REQUEST_NO_SERVICE,
-    BOOKING_CANCELLED,
-    BOOKING_CAR_INFO,
-    BOOKING_CHOOSE_SERVICE,
-    BOOKING_COMMENT,
-    BOOKING_CONFIRM,
-    BOOKING_CREATED,
-    BOOKING_EMPTY_TEXT,
-    BOOKING_INVALID_SERVICE,
     BTN_CANCEL,
-    BTN_CONFIRM,
-    DISCOUNT_LINE_FREE_DIAG,
-    DISCOUNT_LINE_LOYALTY,
-    DISCOUNT_LINE_REFERRAL,
+    ERROR_PHONE_INVALID,
+    MINIAPP_BAD_DATA,
+    MINIAPP_CREATED,
+    QUICK_CREATED,
+    QUICK_NOTE_PROMPT,
+    QUICK_NOTE_SKIPPED,
+    QUICK_PHONE_PROMPT,
+    ADMIN_MINIAPP_NOTIFY,
+    ADMIN_QUICK_NOTIFY,
     MENU_BUTTONS,
-    PROFILE_NO_PHONE,
-    REQUEST_TYPE_LABELS,
 )
+from utils.validators import format_phone_display, normalize_phone
 
 logger = logging.getLogger(__name__)
 
 router = Router(name="booking")
 
 
-def loyalty_annotations(user: User, category: ServiceCategory) -> str:
-    """Строки лояльности, которые уходят в заявку и админам."""
-    lines: list[str] = []
-    if user.loyalty_discount_2nd:
-        lines.append(DISCOUNT_LINE_LOYALTY)
-    if user.discount_10_active:
-        lines.append(DISCOUNT_LINE_REFERRAL)
-    if user.free_diagnostics and category is ServiceCategory.DIAGNOSTICS:
-        lines.append(DISCOUNT_LINE_FREE_DIAG)
-    return "\n".join(lines)
+def _username(user: User) -> str:
+    """@username или «без ника»."""
+    return f"@{user.username}" if user.username else "—"
 
 
-async def consume_booking_loyalty(
-    session: AsyncSession,
-    user: User,
-    category: ServiceCategory,
-) -> None:
-    """Сжигает использованные флаги скидок при подтверждении записи."""
-    if user.free_diagnostics and category is ServiceCategory.DIAGNOSTICS:
-        user.free_diagnostics = False
-    if user.discount_10_active:
-        user.discount_10_active = False
-    if user.loyalty_discount_2nd:
-        user.visits_count += 1
-        user.loyalty_discount_2nd = False
-    await session.flush()
+def _services_block(services_text: str | None) -> str:
+    """Маркированный список услуг."""
+    raw = (services_text or "").strip()
+    if not raw:
+        return "   • не указаны"
+    lines = []
+    for part in raw.replace(";", "\n").split("\n"):
+        item = part.strip(" •-\t")
+        if item:
+            lines.append(f"   • {item}")
+    return "\n".join(lines) if lines else "   • не указаны"
 
 
-def format_admin_request_card(
-    *,
-    request_id: int,
-    request_type: RequestType,
-    user: User,
-    service: ServiceCategory | None,
-    car_info: str | None,
-    text: str,
-) -> str:
-    """Карточка заявки для лички администратора."""
-    username = user.username or ADMIN_REQUEST_NO_CAR
-    discounts = loyalty_annotations(user, service) if service is not None else ""
-    return ADMIN_NEW_REQUEST.format(
+def format_miniapp_card(request_id: int, user: User, *, car: str, services: str, slot: str, comment: str) -> str:
+    """Карточка записи из Mini App для админов."""
+    return ADMIN_MINIAPP_NOTIFY.format(
         request_id=request_id,
-        type=REQUEST_TYPE_LABELS[request_type.value],
-        service=service.label() if service is not None else ADMIN_REQUEST_NO_SERVICE,
-        car=car_info or ADMIN_REQUEST_NO_CAR,
         name=user.full_name,
-        username=username,
-        phone=user.phone or PROFILE_NO_PHONE,
-        text=text,
-        discounts=discounts,
+        username=_username(user),
+        phone=format_phone_display(user.phone) or "не указан",
+        car=car or "не указано",
+        services=_services_block(services),
+        slot=slot or "не указана",
+        comment=comment or "—",
     )
 
 
-async def notify_admins_new_request(
-    message: Message,
-    session: AsyncSession,
-    *,
-    request_id: int,
-    request_type: RequestType,
-    user: User,
-    service: ServiceCategory | None,
-    car_info: str | None,
-    text: str,
-) -> None:
-    """Рассылает новую заявку всем администраторам."""
-    if message.bot is None:
-        logger.warning("Bot instance отсутствует, админы не уведомлены request_id=%s", request_id)
-        return
-    card = format_admin_request_card(
+def format_quick_card(request_id: int, user: User, note: str) -> str:
+    """Карточка срочного звонка."""
+    return ADMIN_QUICK_NOTIFY.format(
         request_id=request_id,
-        request_type=request_type,
-        user=user,
-        service=service,
-        car_info=car_info,
-        text=text,
-    )
-    admins = await UserRepo.get_all_admins(session)
-    for admin in admins:
-        await safe_send(
-            message.bot,
-            admin.tg_id,
-            card,
-            reply_markup=admin_menu_kb(),
-        )
-
-
-async def cancel_client_fsm(
-    message: Message,
-    state: FSMContext,
-    session: AsyncSession,
-    cancel_text: str,
-    *,
-    tg_id: int | None = None,
-) -> None:
-    """Сбрасывает FSM и возвращает в меню."""
-    await state.clear()
-    lookup_id = tg_id
-    if lookup_id is None and message.from_user is not None:
-        lookup_id = message.from_user.id
-    if lookup_id is None:
-        await message.answer(cancel_text)
-        return
-    user = await UserRepo.get_by_tg_id(session, lookup_id)
-    if user is None:
-        await message.answer(cancel_text)
-        return
-    await answer_with_menu(message, user, cancel_text)
-
-
-@router.message(F.text == MENU_BUTTONS["booking"])
-async def booking_entry(
-    message: Message,
-    session: AsyncSession,
-    state: FSMContext,
-) -> None:
-    """Старт записи: выбор категории услуги."""
-    if message.from_user is None:
-        return
-    user = await require_client(message, session, message.from_user)
-    if user is None:
-        return
-    await state.clear()
-    await state.set_state(BookingStates.choose_service)
-    await message.answer(BOOKING_CHOOSE_SERVICE, reply_markup=service_categories_kb())
-
-
-@router.message(BookingStates.choose_service, F.text == BTN_CANCEL)
-@router.message(BookingStates.enter_problem, F.text == BTN_CANCEL)
-@router.message(BookingStates.enter_car, F.text == BTN_CANCEL)
-@router.message(BookingStates.confirm, F.text == BTN_CANCEL)
-async def booking_cancel_button(
-    message: Message,
-    state: FSMContext,
-    session: AsyncSession,
-) -> None:
-    """Выход из записи по кнопке отмены."""
-    await cancel_client_fsm(message, state, session, BOOKING_CANCELLED)
-
-
-@router.message(BookingStates.choose_service, F.text)
-async def booking_choose_service(message: Message, state: FSMContext) -> None:
-    """Сохраняет категорию и запрашивает описание проблемы."""
-    category = category_from_label(message.text or "")
-    if category is None:
-        await message.answer(BOOKING_INVALID_SERVICE, reply_markup=service_categories_kb())
-        return
-    await state.update_data(service=category.value)
-    await state.set_state(BookingStates.enter_problem)
-    await message.answer(BOOKING_COMMENT, reply_markup=cancel_kb())
-
-
-@router.message(BookingStates.enter_problem, F.text)
-async def booking_enter_problem(message: Message, state: FSMContext) -> None:
-    """Сохраняет описание работ."""
-    problem = (message.text or "").strip()
-    if not problem:
-        await message.answer(BOOKING_EMPTY_TEXT, reply_markup=cancel_kb())
-        return
-    await state.update_data(problem=problem)
-    await state.set_state(BookingStates.enter_car)
-    await message.answer(BOOKING_CAR_INFO, reply_markup=cancel_kb())
-
-
-@router.message(BookingStates.enter_car, F.text)
-async def booking_enter_car(
-    message: Message,
-    state: FSMContext,
-    session: AsyncSession,
-) -> None:
-    """Сохраняет данные автомобиля и показывает сводку."""
-    if message.from_user is None:
-        return
-    car_info = (message.text or "").strip()
-    if not car_info:
-        await message.answer(BOOKING_CAR_INFO, reply_markup=cancel_kb())
-        return
-    await state.update_data(car_info=car_info)
-    data = await state.get_data()
-    try:
-        category = ServiceCategory(data["service"])
-    except (KeyError, ValueError):
-        await state.set_state(BookingStates.choose_service)
-        await message.answer(BOOKING_INVALID_SERVICE, reply_markup=service_categories_kb())
-        return
-    user = await UserRepo.get_by_tg_id(session, message.from_user.id)
-    notes = loyalty_annotations(user, category) if user is not None else ""
-    await state.set_state(BookingStates.confirm)
-    await message.answer(
-        BOOKING_CONFIRM.format(
-            service=category.label(),
-            car=car_info,
-            problem=data.get("problem", ""),
-            discounts=notes,
-        ),
-        reply_markup=confirm_kb(),
+        name=user.full_name,
+        username=_username(user),
+        phone=format_phone_display(user.phone) or "не указан",
+        note=note or QUICK_NOTE_SKIPPED,
     )
 
 
-@router.message(BookingStates.confirm, F.text == BTN_CONFIRM)
-async def booking_confirm_yes(
+def _parse_webapp_payload(raw: str) -> dict[str, str]:
+    """Разбирает JSON из Mini App."""
+    data = json.loads(raw)
+    if not isinstance(data, dict):
+        raise ValueError("payload is not an object")
+    services = data.get("services")
+    if isinstance(services, list):
+        services_text = "\n".join(str(item).strip() for item in services if str(item).strip())
+    else:
+        services_text = str(services or "").strip()
+    car = str(data.get("car") or data.get("auto") or "").strip()
+    plate = str(data.get("plate") or data.get("gosnomer") or "").strip()
+    if plate:
+        car = f"{car} ({plate})".strip()
+    return {
+        "phone": str(data.get("phone") or "").strip(),
+        "car": car,
+        "services": services_text,
+        "slot": str(data.get("datetime") or data.get("slot") or data.get("date") or "").strip(),
+        "comment": str(data.get("comment") or data.get("note") or "").strip(),
+    }
+
+
+@router.message(F.web_app_data)
+async def webapp_booking(
     message: Message,
-    state: FSMContext,
     session: AsyncSession,
 ) -> None:
-    """Создаёт заявку, уведомляет админов и применяет скидки."""
-    if message.from_user is None:
+    """Принимает заявку из Mini App."""
+    if message.from_user is None or message.web_app_data is None:
         return
-    user = await require_client(message, session, message.from_user)
-    if user is None:
-        await state.clear()
+    user, _created = await get_or_create_user(session, message.from_user)
+    if user.is_blocked:
         return
-    data = await state.get_data()
     try:
-        category = ServiceCategory(data["service"])
-    except (KeyError, ValueError):
-        await state.set_state(BookingStates.choose_service)
-        await message.answer(BOOKING_INVALID_SERVICE, reply_markup=service_categories_kb())
+        payload = _parse_webapp_payload(message.web_app_data.data)
+    except (ValueError, json.JSONDecodeError):
+        await message.answer(MINIAPP_BAD_DATA)
         return
-    problem = str(data.get("problem", "")).strip()
-    car_info = str(data.get("car_info", "")).strip()
-    notes = loyalty_annotations(user, category)
-    request_text = problem if not notes else f"{problem}\n\n{notes}"
+    phone = normalize_phone(payload["phone"]) if payload["phone"] else None
+    if phone:
+        await UserRepo.update_phone(session, user.tg_id, phone)
+        await session.refresh(user)
+    comment = payload["comment"] or "Запись через Mini App"
     request = await RequestRepo.create(
         session,
         user_id=user.id,
         request_type=RequestType.BOOKING,
-        text=request_text,
-        service=category,
-        car_info=car_info,
+        text=comment,
+        car_info=payload["car"] or None,
+        source=RequestSource.MINIAPP,
+        desired_slot=payload["slot"] or None,
+        services_text=payload["services"] or None,
     )
-    await consume_booking_loyalty(session, user, category)
-    await notify_admins_new_request(
-        message,
+    if message.bot is not None:
+        await notify_admins(
+            message.bot,
+            session,
+            format_miniapp_card(
+                request.id,
+                user,
+                car=payload["car"],
+                services=payload["services"],
+                slot=payload["slot"],
+                comment=comment,
+            ),
+            reply_markup=admin_request_actions_kb(
+                request.id,
+                slot=payload["slot"] or None,
+                phone=user.phone,
+                source=RequestSource.MINIAPP.value,
+            ),
+        )
+    await message.answer(
+        MINIAPP_CREATED.format(request_id=request.id),
+        reply_markup=ReplyKeyboardRemove(),
+    )
+
+
+@router.callback_query(MenuCB.filter(F.action == "quick"))
+@router.message(F.text == MENU_BUTTONS["quick"])
+async def quick_entry(
+    event: Message | CallbackQuery,
+    session: AsyncSession,
+    state: FSMContext,
+) -> None:
+    """Старт экспресс-записи."""
+    message, tg_user = await ack_event(event)
+    if message is None or tg_user is None:
+        return
+    user = await require_client(event, session, tg_user)
+    if user is None:
+        return
+    await state.clear()
+    if not user.phone:
+        await state.set_state(QuickBookingStates.enter_phone)
+        await show_screen(event, QUICK_PHONE_PROMPT, cancel_kb())
+        await message.answer("👇", reply_markup=phone_request_kb())
+        return
+    await state.set_state(QuickBookingStates.enter_note)
+    await show_screen(event, QUICK_NOTE_PROMPT, skip_cancel_kb())
+
+
+@router.message(QuickBookingStates.enter_phone, F.contact)
+async def quick_phone_contact(
+    message: Message,
+    session: AsyncSession,
+    state: FSMContext,
+) -> None:
+    """Сохраняет контакт с reply-кнопки."""
+    if message.from_user is None or message.contact is None:
+        return
+    if message.contact.user_id not in (None, 0, message.from_user.id):
+        await message.answer(ERROR_PHONE_INVALID, reply_markup=phone_request_kb())
+        return
+    phone = normalize_phone(message.contact.phone_number)
+    if phone is None:
+        await message.answer(ERROR_PHONE_INVALID, reply_markup=phone_request_kb())
+        return
+    await _save_phone_and_ask_note(message, session, state, phone)
+
+
+@router.message(QuickBookingStates.enter_phone, F.text)
+async def quick_phone_text(
+    message: Message,
+    session: AsyncSession,
+    state: FSMContext,
+) -> None:
+    """Принимает номер текстом."""
+    if (message.text or "").strip() == BTN_CANCEL:
+        return
+    phone = normalize_phone(message.text or "")
+    if phone is None:
+        await message.answer(ERROR_PHONE_INVALID, reply_markup=phone_request_kb())
+        return
+    await _save_phone_and_ask_note(message, session, state, phone)
+
+
+async def _save_phone_and_ask_note(
+    message: Message,
+    session: AsyncSession,
+    state: FSMContext,
+    phone: str,
+) -> None:
+    """Пишет телефон и переходит к необязательному комментарию."""
+    if message.from_user is None:
+        return
+    user, _created = await get_or_create_user(session, message.from_user)
+    await UserRepo.update_phone(session, user.tg_id, phone)
+    await message.answer("\u2060", reply_markup=ReplyKeyboardRemove())
+    await state.set_state(QuickBookingStates.enter_note)
+    await message.answer(QUICK_NOTE_PROMPT, reply_markup=skip_cancel_kb())
+
+
+@router.callback_query(QuickBookingStates.enter_phone, MenuCB.filter(F.action == "cancel"))
+@router.callback_query(QuickBookingStates.enter_note, MenuCB.filter(F.action == "cancel"))
+@router.message(QuickBookingStates.enter_phone, F.text == BTN_CANCEL)
+@router.message(QuickBookingStates.enter_note, F.text == BTN_CANCEL)
+async def quick_cancel(
+    event: Message | CallbackQuery,
+    state: FSMContext,
+    session: AsyncSession,
+) -> None:
+    """Отмена быстрой записи."""
+    message, tg_user = await ack_event(event)
+    if message is None or tg_user is None:
+        return
+    await state.clear()
+    user, _created = await get_or_create_user(session, tg_user)
+    if isinstance(event, Message):
+        await event.answer("\u2060", reply_markup=ReplyKeyboardRemove())
+    await answer_with_menu(event, user, "↩️ Запрос на звонок отменён.")
+
+
+@router.callback_query(QuickBookingStates.enter_note, MenuCB.filter(F.action == "skip"))
+async def quick_skip_note(
+    callback: CallbackQuery,
+    state: FSMContext,
+    session: AsyncSession,
+) -> None:
+    """Пропуск комментария."""
+    await callback.answer()
+    await _finish_quick(callback, session, state, QUICK_NOTE_SKIPPED)
+
+
+@router.message(QuickBookingStates.enter_note, F.text)
+async def quick_note_text(
+    message: Message,
+    state: FSMContext,
+    session: AsyncSession,
+) -> None:
+    """Сохраняет пожелание и создаёт заявку."""
+    note = (message.text or "").strip()
+    if not note or note == BTN_CANCEL:
+        return
+    await _finish_quick(message, session, state, note)
+
+
+async def _finish_quick(
+    event: Message | CallbackQuery,
+    session: AsyncSession,
+    state: FSMContext,
+    note: str,
+) -> None:
+    """Создаёт заявку на звонок и уведомляет админов."""
+    from handlers.start import unpack_event
+
+    message, tg_user = unpack_event(event)
+    if message is None or tg_user is None:
+        return
+    user = await require_client(event, session, tg_user)
+    if user is None:
+        await state.clear()
+        return
+    request = await RequestRepo.create(
         session,
-        request_id=request.id,
+        user_id=user.id,
         request_type=RequestType.BOOKING,
-        user=user,
-        service=category,
-        car_info=car_info,
-        text=request_text,
+        text=note,
+        car_info=None if note == QUICK_NOTE_SKIPPED else note[:255],
+        source=RequestSource.QUICK,
     )
     await state.clear()
-    await answer_with_menu(
-        message,
-        user,
-        BOOKING_CREATED.format(request_id=request.id),
-    )
-
-
-@router.message(BookingStates.confirm, F.text)
-async def booking_confirm_hint(message: Message) -> None:
-    """Напоминает подтвердить кнопками."""
-    await message.answer(BOOKING_CONFIRM.format(service="—", car="—", problem="—", discounts=""), reply_markup=confirm_kb())
+    if message.bot is not None:
+        await notify_admins(
+            message.bot,
+            session,
+            format_quick_card(request.id, user, note),
+            reply_markup=admin_request_actions_kb(
+                request.id,
+                phone=user.phone,
+                source=RequestSource.QUICK.value,
+            ),
+        )
+    await answer_with_menu(event, user, QUICK_CREATED)

@@ -24,7 +24,7 @@ pip install -r requirements.txt
 copy .env.example .env   # Linux/macOS: cp .env.example .env
 ```
 
-Заполните `.env`: `BOT_TOKEN`, `OWNER_ID`, `ADMIN_IDS`, контакты сервиса, `BOT_USERNAME`.
+Заполните `.env`: `BOT_TOKEN`, `ADMIN_CHAT_ID`, `OWNER_ID`, `ADMIN_IDS`, контакты сервиса, `BOT_USERNAME`. Имена `BOT_TOKEN` и `ADMIN_CHAT_ID` совпадают с сайтом Mini App.
 
 ```bash
 python main.py
@@ -86,7 +86,7 @@ texts.py               # все пользовательские тексты
 main.py                # точка входа, polling, логи, error handler
 database/              # модели SQLAlchemy и репозитории
 handlers/              # клиентские и админ-сценарии
-keyboards/             # reply-клавиатуры
+keyboards/             # reply и inline-клавиатуры
 states/                # FSM
 filters/               # IsAdmin, IsOwner
 middlewares/           # сессия БД, антифлуд

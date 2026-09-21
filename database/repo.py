@@ -16,6 +16,7 @@ from config import settings
 from database.models import (
     ClientRequest,
     Promo,
+    RequestSource,
     RequestStatus,
     RequestType,
     Service,
@@ -65,6 +66,7 @@ class UserRepo:
             username=username,
             is_admin=is_admin,
             referral_code=await _unique_referral_code(session),
+            discount_10_active=True,
         )
         session.add(user)
         await session.flush()
@@ -183,7 +185,29 @@ class UserRepo:
         result = await session.execute(
             select(User).where(or_(*conditions)).order_by(User.created_at.desc())
         )
-        return list(result.scalars().all())
+        found = list(result.scalars().all())
+        seen = {user.id for user in found}
+        plate_result = await session.execute(
+            select(User)
+            .join(ClientRequest, ClientRequest.user_id == User.id)
+            .where(func.lower(func.coalesce(ClientRequest.car_info, "")).like(pattern))
+            .order_by(User.created_at.desc())
+        )
+        for user in plate_result.scalars().all():
+            if user.id not in seen:
+                found.append(user)
+                seen.add(user.id)
+        return found
+
+    @staticmethod
+    async def add_bonus(session: AsyncSession, user_id: int, amount: int) -> User | None:
+        """Начисляет бонусы на баланс клиента."""
+        user = await session.get(User, user_id)
+        if user is None:
+            return None
+        user.bonus_balance = max(0, user.bonus_balance + amount)
+        await session.flush()
+        return user
 
     @staticmethod
     async def add_admin(session: AsyncSession, tg_id: int) -> User | None:
@@ -220,6 +244,11 @@ class RequestRepo:
         text: str,
         service: ServiceCategory | None = None,
         car_info: str | None = None,
+        source: RequestSource = RequestSource.QUICK,
+        desired_slot: str | None = None,
+        services_text: str | None = None,
+        media_file_id: str | None = None,
+        media_type: str | None = None,
     ) -> ClientRequest:
         """Создаёт новую заявку клиента со статусом NEW."""
         request = ClientRequest(
@@ -228,6 +257,11 @@ class RequestRepo:
             service=service,
             car_info=car_info,
             text=text,
+            source=source,
+            desired_slot=desired_slot,
+            services_text=services_text,
+            media_file_id=media_file_id,
+            media_type=media_type,
             status=RequestStatus.NEW,
         )
         session.add(request)
@@ -263,6 +297,68 @@ class RequestRepo:
             .order_by(ClientRequest.created_at.asc())
         )
         return list(result.scalars().all())
+
+    @staticmethod
+    async def count_new(session: AsyncSession) -> int:
+        """Число заявок в статусе NEW."""
+        result = await session.scalar(
+            select(func.count()).select_from(ClientRequest).where(
+                ClientRequest.status == RequestStatus.NEW
+            )
+        )
+        return int(result or 0)
+
+    @staticmethod
+    async def list_by_statuses(
+        session: AsyncSession,
+        statuses: tuple[RequestStatus, ...],
+        *,
+        oldest_first: bool = False,
+    ) -> list[ClientRequest]:
+        """Заявки указанных статусов."""
+        stmt = select(ClientRequest).where(ClientRequest.status.in_(statuses))
+        if oldest_first:
+            stmt = stmt.order_by(ClientRequest.created_at.asc())
+        else:
+            stmt = stmt.order_by(ClientRequest.created_at.desc())
+        result = await session.execute(stmt)
+        return list(result.scalars().all())
+
+    @staticmethod
+    async def stats(session: AsyncSession) -> dict[str, int]:
+        """Счётчики заявок за день, неделю и месяц в часовом поясе сервиса."""
+        now = datetime.now(ZoneInfo(settings.tz))
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_start = today_start - timedelta(days=today_start.weekday())
+        month_start = today_start.replace(day=1)
+
+        async def _count(since: datetime) -> int:
+            value = await session.scalar(
+                select(func.count()).select_from(ClientRequest).where(
+                    ClientRequest.created_at >= since
+                )
+            )
+            return int(value or 0)
+
+        miniapp = await session.scalar(
+            select(func.count()).select_from(ClientRequest).where(
+                ClientRequest.source == RequestSource.MINIAPP,
+                ClientRequest.created_at >= today_start,
+            )
+        )
+        quick = await session.scalar(
+            select(func.count()).select_from(ClientRequest).where(
+                ClientRequest.source == RequestSource.QUICK,
+                ClientRequest.created_at >= today_start,
+            )
+        )
+        return {
+            "today": await _count(today_start),
+            "week": await _count(week_start),
+            "month": await _count(month_start),
+            "today_miniapp": int(miniapp or 0),
+            "today_quick": int(quick or 0),
+        }
 
     @staticmethod
     async def update_status(

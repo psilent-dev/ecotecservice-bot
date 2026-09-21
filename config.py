@@ -18,7 +18,9 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
+    # Имена как на сайте Mini App: BOT_TOKEN, ADMIN_CHAT_ID.
     bot_token: str
+    admin_chat_id: int | None = None
     owner_id: int
     # NoDecode: иначе pydantic-settings пытается разобрать «123,456» как JSON.
     admin_ids: Annotated[list[int], NoDecode] = Field(default_factory=list)
@@ -30,6 +32,7 @@ class Settings(BaseSettings):
     service_hours: str
     service_maps_url: str
     bot_username: str
+    webapp_url: str = "https://ecotecservice.ru/tg"
     # Если api.telegram.org недоступен, например: socks5://127.0.0.1:1080
     telegram_proxy: str | None = None
 
@@ -47,6 +50,19 @@ class Settings(BaseSettings):
             parts = [chunk.strip() for chunk in value.split(",") if chunk.strip()]
             return [int(chunk) for chunk in parts]
         raise ValueError("Некорректный формат ADMIN_IDS: ожидается строка «123,456»")
+
+    @field_validator("admin_chat_id", mode="before")
+    @classmethod
+    def empty_admin_chat_to_none(cls, value: str | int | None) -> int | None:
+        """Пустой `ADMIN_CHAT_ID` — заявки некуда отправлять (в личку админам не пишем)."""
+        if value is None:
+            return None
+        if isinstance(value, str):
+            cleaned = value.strip()
+            if not cleaned:
+                return None
+            return int(cleaned)
+        return int(value)
 
     @field_validator("telegram_proxy", mode="before")
     @classmethod

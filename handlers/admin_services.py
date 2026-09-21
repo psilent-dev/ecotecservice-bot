@@ -6,25 +6,32 @@ import html
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models import Service, ServiceCategory
 from database.repo import ServiceRepo
 from filters.admin import IsAdmin
-from keyboards.reply import (
-    admin_menu_kb,
+from handlers.start import ack_event, show_admin_home, show_screen
+from keyboards.inline import (
+    NEW_ITEM_ID,
+    ConfirmCB,
+    MenuCB,
+    NavCB,
+    ServiceAdminCB,
     cancel_kb,
-    category_from_label,
+    categories_admin_kb,
     confirm_kb,
-    list_kb,
-    numbered_label,
-    parse_numbered,
-    service_categories_kb,
-    service_item_kb,
+    services_list_kb,
     skip_cancel_kb,
 )
-from states.admin import AdminPickStates, AdminServiceStates
+from states.admin import AdminServiceStates
 from texts import (
     ADMIN_MENU_BUTTONS,
     ADMIN_SERVICE_ACTIVE,
@@ -41,26 +48,18 @@ from texts import (
     ADMIN_SERVICE_PROMPT_PRICE_TO,
     ADMIN_SERVICE_UPDATED,
     ADMIN_SERVICES_HEADER,
-    BTN_ADD,
     BTN_BACK,
     BTN_CANCEL,
-    BTN_CONFIRM,
-    BTN_DELETE,
-    BTN_EDIT,
     BTN_SKIP,
-    BTN_TOGGLE,
     FSM_CANCELLED,
     PRICE_FROM,
     PRICE_ON_REQUEST,
     PRICE_RANGE,
 )
 
-_CAT_LABELS = {item.label() for item in ServiceCategory}
-
 router = Router(name="admin_services")
 router.message.filter(IsAdmin())
-
-NEW_ITEM_ID = 0
+router.callback_query.filter(IsAdmin())
 
 
 def format_price(price_from: int | None, price_to: int | None) -> str:
@@ -85,7 +84,7 @@ def format_service_item(service: Service) -> str:
 
 
 def parse_optional_price(raw: str) -> tuple[bool, int | None]:
-    """Разбирает цену: пусто, 0 и «Пропустить» → None."""
+    """Разбирает цену: пусто, 0 и «Пропустить» → None; иначе неотрицательное целое."""
     text = raw.strip()
     if text in {"", "0", BTN_SKIP}:
         return True, None
@@ -94,103 +93,94 @@ def parse_optional_price(raw: str) -> tuple[bool, int | None]:
     return False, None
 
 
-async def show_categories(message: Message, state: FSMContext) -> None:
-    """Корень: категории."""
-    await state.set_state(AdminPickStates.service_cats)
-    await message.answer(ADMIN_SERVICE_PROMPT_CATEGORY, reply_markup=service_categories_kb(with_cancel=False))
-
-
 async def show_category_services(
-    message: Message,
-    state: FSMContext,
+    event: Message | CallbackQuery,
     session: AsyncSession,
     category: ServiceCategory,
 ) -> None:
-    """Услуги выбранной категории."""
+    """Показывает услуги выбранной категории."""
     all_services = await ServiceRepo.list_all(session)
     services = [item for item in all_services if item.category is category]
-    await state.set_state(AdminPickStates.services)
-    await state.update_data(browse_category=category.value)
     lines = [ADMIN_SERVICES_HEADER, category.label()]
     if services:
         lines.extend(format_service_item(item) for item in services)
-    labels = [numbered_label(item.id, item.name) for item in services]
-    await message.answer(
-        "\n".join(lines),
-        reply_markup=list_kb(labels, extra=[BTN_ADD]),
+    builder = InlineKeyboardBuilder.from_markup(services_list_kb(services))
+    builder.row(
+        InlineKeyboardButton(
+            text=BTN_BACK,
+            callback_data=NavCB(action="svc_cats").pack(),
+        )
     )
+    await show_screen(event, "\n".join(lines), builder.as_markup())
 
 
+@router.callback_query(MenuCB.filter(F.action == "admin_services"))
 @router.message(F.text == ADMIN_MENU_BUTTONS["services"])
-async def services_root(message: Message, state: FSMContext) -> None:
+async def services_root(event: Message | CallbackQuery, state: FSMContext) -> None:
     """Корень раздела: список категорий."""
-    await state.clear()
-    await show_categories(message, state)
-
-
-@router.message(AdminPickStates.service_cats, F.text == BTN_BACK)
-@router.message(AdminPickStates.service_cats, F.text == BTN_CANCEL)
-async def services_cats_back(message: Message, state: FSMContext) -> None:
-    """Назад в админ-меню."""
-    await state.clear()
-    await message.answer(FSM_CANCELLED, reply_markup=admin_menu_kb())
-
-
-@router.message(AdminPickStates.service_cats, F.text.in_(_CAT_LABELS))
-async def services_pick_cat(message: Message, state: FSMContext, session: AsyncSession) -> None:
-    """Категория при просмотре."""
-    category = category_from_label(message.text or "")
-    if category is None:
+    message, _user = await ack_event(event)
+    if message is None:
         return
-    await show_category_services(message, state, session, category)
+    await state.clear()
+    await show_screen(event, ADMIN_SERVICE_PROMPT_CATEGORY, categories_admin_kb())
 
 
-@router.message(AdminPickStates.services, F.text == BTN_BACK)
-async def services_list_back(message: Message, state: FSMContext) -> None:
-    """Из списка услуг к категориям."""
-    await show_categories(message, state)
+@router.callback_query(NavCB.filter(F.action == "svc_cats"))
+async def services_categories_back(callback: CallbackQuery, state: FSMContext) -> None:
+    """Возврат к списку категорий."""
+    await callback.answer()
+    await state.clear()
+    await show_screen(callback, ADMIN_SERVICE_PROMPT_CATEGORY, categories_admin_kb())
 
 
-@router.message(AdminPickStates.services, F.text == BTN_ADD)
-async def service_add_start(message: Message, state: FSMContext) -> None:
-    """FSM добавления услуги."""
+@router.callback_query(ServiceAdminCB.filter(F.action == "cat"))
+async def services_in_category(
+    callback: CallbackQuery,
+    callback_data: ServiceAdminCB,
+    session: AsyncSession,
+    state: FSMContext,
+) -> None:
+    """Список услуг внутри категории."""
+    await callback.answer()
+    if callback.message is None:
+        return
+    try:
+        category = ServiceCategory(callback_data.category)
+    except ValueError:
+        return
+    current = await state.get_state()
+    if current == AdminServiceStates.choose_category.state:
+        await state.update_data(category=category.value)
+        await state.set_state(AdminServiceStates.enter_name)
+        await show_screen(callback, ADMIN_SERVICE_PROMPT_NAME, cancel_kb())
+        return
+    await show_category_services(callback, session, category)
+
+
+@router.callback_query(ServiceAdminCB.filter(F.action == "add"))
+async def service_add_start(
+    callback: CallbackQuery,
+    state: FSMContext,
+) -> None:
+    """Запуск FSM добавления услуги."""
+    await callback.answer()
     await state.set_state(AdminServiceStates.choose_category)
     await state.update_data(service_id=NEW_ITEM_ID)
-    await message.answer(ADMIN_SERVICE_PROMPT_CATEGORY, reply_markup=service_categories_kb())
+    await show_screen(callback, ADMIN_SERVICE_PROMPT_CATEGORY, categories_admin_kb())
 
 
-@router.message(AdminPickStates.services, F.text.regexp(r"^№\d+"))
-async def services_pick_item(message: Message, state: FSMContext, session: AsyncSession) -> None:
-    """Открывает карточку услуги."""
-    service_id = parse_numbered(message.text or "")
-    if service_id is None:
-        return
-    service = await ServiceRepo.get_by_id(session, service_id)
+@router.callback_query(ServiceAdminCB.filter(F.action == "edit"))
+async def service_edit_start(
+    callback: CallbackQuery,
+    callback_data: ServiceAdminCB,
+    session: AsyncSession,
+    state: FSMContext,
+) -> None:
+    """Запуск FSM редактирования существующей услуги."""
+    await callback.answer()
+    service = await ServiceRepo.get_by_id(session, callback_data.service_id)
     if service is None:
-        await message.answer(ADMIN_SERVICE_NOT_FOUND, reply_markup=admin_menu_kb())
-        await state.clear()
-        return
-    await state.set_state(AdminPickStates.service_item)
-    await state.update_data(service_id=service.id, browse_category=service.category.value)
-    await message.answer(format_service_item(service), reply_markup=service_item_kb())
-
-
-@router.message(AdminPickStates.service_item, F.text == BTN_BACK)
-async def service_item_back(message: Message, state: FSMContext, session: AsyncSession) -> None:
-    """Назад к списку категории."""
-    data = await state.get_data()
-    category = ServiceCategory(str(data["browse_category"]))
-    await show_category_services(message, state, session, category)
-
-
-@router.message(AdminPickStates.service_item, F.text == BTN_EDIT)
-async def service_edit_start(message: Message, state: FSMContext, session: AsyncSession) -> None:
-    """FSM редактирования."""
-    data = await state.get_data()
-    service = await ServiceRepo.get_by_id(session, int(data["service_id"]))
-    if service is None:
-        await state.clear()
-        await message.answer(ADMIN_SERVICE_NOT_FOUND, reply_markup=admin_menu_kb())
+        await show_screen(callback, ADMIN_SERVICE_NOT_FOUND)
         return
     await state.set_state(AdminServiceStates.choose_category)
     await state.update_data(
@@ -201,70 +191,82 @@ async def service_edit_start(message: Message, state: FSMContext, session: Async
         price_from=service.price_from,
         price_to=service.price_to,
     )
-    await message.answer(
+    await show_screen(
+        callback,
         f"{ADMIN_SERVICE_PROMPT_CATEGORY}\n{service.category.label()}",
-        reply_markup=service_categories_kb(),
+        categories_admin_kb(),
     )
 
 
-@router.message(AdminPickStates.service_item, F.text == BTN_TOGGLE)
-async def service_toggle(message: Message, state: FSMContext, session: AsyncSession) -> None:
+@router.callback_query(ServiceAdminCB.filter(F.action == "toggle"))
+async def service_toggle(
+    callback: CallbackQuery,
+    callback_data: ServiceAdminCB,
+    session: AsyncSession,
+) -> None:
     """Скрывает или показывает услугу."""
-    data = await state.get_data()
-    service = await ServiceRepo.get_by_id(session, int(data["service_id"]))
+    await callback.answer()
+    service = await ServiceRepo.get_by_id(session, callback_data.service_id)
     if service is None:
-        await state.clear()
-        await message.answer(ADMIN_SERVICE_NOT_FOUND, reply_markup=admin_menu_kb())
+        await show_screen(callback, ADMIN_SERVICE_NOT_FOUND)
         return
     service.is_active = not service.is_active
     await session.flush()
-    await message.answer(format_service_item(service), reply_markup=service_item_kb())
+    await show_category_services(callback, session, service.category)
 
 
-@router.message(AdminPickStates.service_item, F.text == BTN_DELETE)
-async def service_delete(message: Message, state: FSMContext, session: AsyncSession) -> None:
-    """Удаляет услугу."""
-    data = await state.get_data()
-    service_id = int(data["service_id"])
-    category = ServiceCategory(str(data["browse_category"]))
-    deleted = await ServiceRepo.delete(session, service_id)
+@router.callback_query(ServiceAdminCB.filter(F.action == "delete"))
+async def service_delete(
+    callback: CallbackQuery,
+    callback_data: ServiceAdminCB,
+    session: AsyncSession,
+) -> None:
+    """Удаляет услугу и обновляет список категории."""
+    await callback.answer()
+    try:
+        category = ServiceCategory(callback_data.category)
+    except ValueError:
+        category = None
+    deleted = await ServiceRepo.delete(session, callback_data.service_id)
     if not deleted:
-        await state.clear()
-        await message.answer(ADMIN_SERVICE_NOT_FOUND, reply_markup=admin_menu_kb())
+        await show_screen(callback, ADMIN_SERVICE_NOT_FOUND)
         return
-    await message.answer(ADMIN_SERVICE_DELETED)
-    await show_category_services(message, state, session, category)
+    if category is not None:
+        await show_category_services(callback, session, category)
+        return
+    await show_admin_home(callback, session)
 
 
+@router.callback_query(AdminServiceStates.choose_category, MenuCB.filter(F.action == "cancel"))
+@router.callback_query(AdminServiceStates.enter_name, MenuCB.filter(F.action == "cancel"))
+@router.callback_query(AdminServiceStates.enter_description, MenuCB.filter(F.action == "cancel"))
+@router.callback_query(AdminServiceStates.enter_price_from, MenuCB.filter(F.action == "cancel"))
+@router.callback_query(AdminServiceStates.enter_price_to, MenuCB.filter(F.action == "cancel"))
+@router.callback_query(AdminServiceStates.confirm, MenuCB.filter(F.action == "cancel"))
 @router.message(AdminServiceStates.choose_category, F.text == BTN_CANCEL)
 @router.message(AdminServiceStates.enter_name, F.text == BTN_CANCEL)
 @router.message(AdminServiceStates.enter_description, F.text == BTN_CANCEL)
 @router.message(AdminServiceStates.enter_price_from, F.text == BTN_CANCEL)
 @router.message(AdminServiceStates.enter_price_to, F.text == BTN_CANCEL)
 @router.message(AdminServiceStates.confirm, F.text == BTN_CANCEL)
-async def service_fsm_cancel(message: Message, state: FSMContext) -> None:
-    """Отмена FSM услуги."""
-    await state.clear()
-    await message.answer(FSM_CANCELLED, reply_markup=admin_menu_kb())
-
-
-@router.message(AdminServiceStates.choose_category, F.text)
-async def service_fsm_category(message: Message, state: FSMContext) -> None:
-    """Категория на шаге создания/редактирования."""
-    category = category_from_label(message.text or "")
-    if category is None:
-        await message.answer(ADMIN_SERVICE_PROMPT_CATEGORY, reply_markup=service_categories_kb())
+async def service_fsm_cancel(
+    event: Message | CallbackQuery,
+    state: FSMContext,
+    session: AsyncSession,
+) -> None:
+    """Отмена любого шага FSM услуги."""
+    message, _user = await ack_event(event)
+    if message is None:
         return
-    await state.update_data(category=category.value)
-    await state.set_state(AdminServiceStates.enter_name)
-    await message.answer(ADMIN_SERVICE_PROMPT_NAME, reply_markup=cancel_kb())
+    await state.clear()
+    await show_admin_home(event, session)
 
 
 @router.message(AdminServiceStates.enter_name, F.text)
 async def service_enter_name(message: Message, state: FSMContext) -> None:
     """Название услуги."""
     name = (message.text or "").strip()
-    if not name:
+    if not name or name == BTN_CANCEL:
         await message.answer(ADMIN_SERVICE_PROMPT_NAME, reply_markup=cancel_kb())
         return
     await state.update_data(name=name)
@@ -274,32 +276,72 @@ async def service_enter_name(message: Message, state: FSMContext) -> None:
 
 @router.message(AdminServiceStates.enter_description, F.text)
 async def service_enter_description(message: Message, state: FSMContext) -> None:
-    """Описание услуги."""
+    """Описание услуги (можно пропустить)."""
     raw = (message.text or "").strip()
     description = None if raw in {"", BTN_SKIP} else raw
+    await _save_service_description(message, state, description)
+
+
+@router.callback_query(AdminServiceStates.enter_description, MenuCB.filter(F.action == "skip"))
+async def service_skip_description(callback: CallbackQuery, state: FSMContext) -> None:
+    """Пропуск описания услуги."""
+    await callback.answer()
+    await _save_service_description(callback, state, None)
+
+
+async def _save_service_description(
+    event: Message | CallbackQuery,
+    state: FSMContext,
+    description: str | None,
+) -> None:
+    """Сохраняет описание и запрашивает цену «от»."""
     await state.update_data(description=description or "")
     await state.set_state(AdminServiceStates.enter_price_from)
-    await message.answer(ADMIN_SERVICE_PROMPT_PRICE_FROM, reply_markup=skip_cancel_kb())
+    await show_screen(event, ADMIN_SERVICE_PROMPT_PRICE_FROM, skip_cancel_kb())
 
 
 @router.message(AdminServiceStates.enter_price_from, F.text)
 async def service_enter_price_from(message: Message, state: FSMContext) -> None:
     """Цена «от»."""
-    ok, value = parse_optional_price(message.text or "")
+    await _save_price_from(message, state, message.text or "")
+
+
+@router.callback_query(AdminServiceStates.enter_price_from, MenuCB.filter(F.action == "skip"))
+async def service_skip_price_from(callback: CallbackQuery, state: FSMContext) -> None:
+    """Пропуск цены «от»."""
+    await callback.answer()
+    await _save_price_from(callback, state, BTN_SKIP)
+
+
+async def _save_price_from(event: Message | CallbackQuery, state: FSMContext, raw: str) -> None:
+    """Разбирает цену «от» и переходит к цене «до»."""
+    ok, value = parse_optional_price(raw)
     if not ok:
-        await message.answer(ADMIN_SERVICE_INVALID_PRICE, reply_markup=skip_cancel_kb())
+        await show_screen(event, ADMIN_SERVICE_INVALID_PRICE, skip_cancel_kb())
         return
     await state.update_data(price_from=value)
     await state.set_state(AdminServiceStates.enter_price_to)
-    await message.answer(ADMIN_SERVICE_PROMPT_PRICE_TO, reply_markup=skip_cancel_kb())
+    await show_screen(event, ADMIN_SERVICE_PROMPT_PRICE_TO, skip_cancel_kb())
 
 
 @router.message(AdminServiceStates.enter_price_to, F.text)
 async def service_enter_price_to(message: Message, state: FSMContext) -> None:
     """Цена «до» и предпросмотр."""
-    ok, value = parse_optional_price(message.text or "")
+    await _save_price_to(message, state, message.text or "")
+
+
+@router.callback_query(AdminServiceStates.enter_price_to, MenuCB.filter(F.action == "skip"))
+async def service_skip_price_to(callback: CallbackQuery, state: FSMContext) -> None:
+    """Пропуск цены «до»."""
+    await callback.answer()
+    await _save_price_to(callback, state, BTN_SKIP)
+
+
+async def _save_price_to(event: Message | CallbackQuery, state: FSMContext, raw: str) -> None:
+    """Разбирает цену «до» и показывает подтверждение."""
+    ok, value = parse_optional_price(raw)
     if not ok:
-        await message.answer(ADMIN_SERVICE_INVALID_PRICE, reply_markup=skip_cancel_kb())
+        await show_screen(event, ADMIN_SERVICE_INVALID_PRICE, skip_cancel_kb())
         return
     await state.update_data(price_to=value)
     data = await state.get_data()
@@ -315,16 +357,32 @@ async def service_enter_price_to(message: Message, state: FSMContext) -> None:
     if description:
         preview = f"{preview}\n{html.escape(description, quote=False)}"
     await state.set_state(AdminServiceStates.confirm)
-    await message.answer(preview, reply_markup=confirm_kb())
+    await show_screen(event, preview, confirm_kb())
 
 
-@router.message(AdminServiceStates.confirm, F.text == BTN_CONFIRM)
+@router.callback_query(AdminServiceStates.confirm, ConfirmCB.filter(F.action == "no"))
+async def service_confirm_no(
+    callback: CallbackQuery,
+    state: FSMContext,
+    session: AsyncSession,
+) -> None:
+    """Отказ сохранить услугу."""
+    await callback.answer()
+    await state.clear()
+    await show_admin_home(callback, session)
+
+
+@router.callback_query(AdminServiceStates.confirm, ConfirmCB.filter(F.action == "yes"))
 async def service_confirm_yes(
-    message: Message,
+    callback: CallbackQuery,
     state: FSMContext,
     session: AsyncSession,
 ) -> None:
     """Создаёт или обновляет услугу."""
+    await callback.answer()
+    if callback.message is None:
+        await state.clear()
+        return
     data = await state.get_data()
     category = ServiceCategory(str(data["category"]))
     name = str(data["name"]).strip()
@@ -333,6 +391,7 @@ async def service_confirm_yes(
     price_from = data.get("price_from")
     price_to = data.get("price_to")
     service_id = int(data.get("service_id") or NEW_ITEM_ID)
+    await state.clear()
 
     if service_id == NEW_ITEM_ID:
         service = await ServiceRepo.create(
@@ -355,10 +414,10 @@ async def service_confirm_yes(
             price_to=price_to if isinstance(price_to, int) else None,
         )
         if service is None:
-            await state.clear()
-            await message.answer(ADMIN_SERVICE_NOT_FOUND, reply_markup=admin_menu_kb())
+            await show_screen(callback, ADMIN_SERVICE_NOT_FOUND)
+            await show_admin_home(callback, session)
             return
         text = ADMIN_SERVICE_UPDATED.format(name=service.name)
 
-    await message.answer(text)
-    await show_category_services(message, state, session, category)
+    await show_screen(callback, text)
+    await show_admin_home(callback, session)

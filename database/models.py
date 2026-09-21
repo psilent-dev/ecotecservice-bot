@@ -39,6 +39,8 @@ class ServiceCategory(str, enum.Enum):
     SUSPENSION = "suspension"
     ELECTRICAL = "electrical"
     TIRES = "tires"
+    BRAKES = "brakes"
+    ENGINE = "engine"
     TUNING = "tuning"
     OVERHAUL = "overhaul"
 
@@ -46,7 +48,7 @@ class ServiceCategory(str, enum.Enum):
         """Русское название категории с эмодзи-маркером для меню."""
         from texts import SERVICE_CATEGORIES
 
-        return SERVICE_CATEGORIES[self.value]
+        return SERVICE_CATEGORIES.get(self.value, self.value)
 
 
 class RequestType(str, enum.Enum):
@@ -54,6 +56,14 @@ class RequestType(str, enum.Enum):
 
     BOOKING = "booking"
     PRICE = "price"
+    QUESTION = "question"
+
+
+class RequestSource(str, enum.Enum):
+    """Откуда пришла заявка."""
+
+    MINIAPP = "miniapp"
+    QUICK = "quick"
     QUESTION = "question"
 
 
@@ -86,6 +96,7 @@ class User(Base):
     discount_10_active: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     visits_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     loyalty_discount_2nd: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    bonus_balance: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     is_blocked: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -138,6 +149,21 @@ class ClientRequest(Base):
     )
     car_info: Mapped[str | None] = mapped_column(String(255), nullable=True)
     text: Mapped[str] = mapped_column(Text, nullable=False)
+    source: Mapped[RequestSource] = mapped_column(
+        Enum(
+            RequestSource,
+            values_callable=_enum_values,
+            native_enum=False,
+            length=32,
+        ),
+        default=RequestSource.QUICK,
+        nullable=False,
+        index=True,
+    )
+    desired_slot: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    services_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    media_file_id: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    media_type: Mapped[str | None] = mapped_column(String(32), nullable=True)
     status: Mapped[RequestStatus] = mapped_column(
         Enum(
             RequestStatus,

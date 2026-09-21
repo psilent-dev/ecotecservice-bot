@@ -32,6 +32,24 @@ def generate_referral_code() -> str:
     return encoded.rstrip("=").upper()
 
 
+def format_phone_display(phone: str | None) -> str:
+    """Красивый номер: +7 (999) 000-00-00."""
+    if not phone:
+        return ""
+    digits = _PHONE_DIGITS_RE.sub("", phone)
+    if len(digits) == 11 and digits.startswith("7"):
+        return f"+7 ({digits[1:4]}) {digits[4:7]}-{digits[7:9]}-{digits[9:11]}"
+    return phone
+
+
+def tel_href(phone: str | None) -> str | None:
+    """Нормализованный tel:+7… для ссылок (Telegram часто отклоняет такой URL)."""
+    if not phone:
+        return None
+    normalized = normalize_phone(phone)
+    return f"tel:{normalized}" if normalized else None
+
+
 def is_valid_tg_id(s: str) -> bool:
     """Проверяет, что строка — положительный целочисленный Telegram ID."""
     value = s.strip()

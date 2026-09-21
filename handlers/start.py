@@ -1,61 +1,114 @@
-"""Регистрация, /start и запрос телефона."""
+"""Регистрация, /start и общая навигация."""
 
 from __future__ import annotations
 
 import logging
 from typing import Any
 
-from aiogram import Bot, F, Router
-from aiogram.exceptions import TelegramAPIError
-from aiogram.filters import BaseFilter, CommandObject, CommandStart, StateFilter
+from aiogram import Bot, Router
+from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
+from aiogram.filters import CommandObject, CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardMarkup, TelegramObject, User as TgUser
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardMarkup,
+    MenuButtonWebApp,
+    Message,
+    ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
+    User as TgUser,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
 from database.models import User
-from database.repo import UserRepo
+from database.repo import RequestRepo, UserRepo
 from handlers.referral import apply_referral, parse_ref_code
-from keyboards.reply import admin_menu_kb, main_menu_kb, phone_request_kb
+from keyboards.inline import admin_menu_kb, main_menu_kb, webapp_info, webapp_to_url_markup
 from texts import (
     ADMIN_MENU,
-    ERROR_PHONE_INVALID,
     LOYALTY_INVITER_REWARD,
-    PHONE_RECEIVED,
-    SHARE_PHONE_REQUEST,
     START_GREETING,
     USER_BLOCKED,
 )
-from utils.validators import normalize_phone
 
 logger = logging.getLogger(__name__)
 
 router = Router(name="start")
 
 
-class WaitingPhoneFilter(BaseFilter):
-    """Пропускает текстовый номер, только если у пользователя ещё нет телефона."""
-
-    async def __call__(
-        self,
-        event: TelegramObject,
-        session: AsyncSession,
-        event_from_user: TgUser | None = None,
-    ) -> bool:
-        """True, если это похоже на телефон и в профиле номер ещё не сохранён."""
-        if event_from_user is None or not isinstance(event, Message) or event.text is None:
-            return False
-        if normalize_phone(event.text) is None:
-            return False
-        user = await UserRepo.get_by_tg_id(session, event_from_user.id)
-        return user is None or not user.phone
+def menu_kb(user: User) -> InlineKeyboardMarkup:
+    """Клиентское меню; у администратора есть вход в панель."""
+    return main_menu_kb(is_admin=user.is_admin)
 
 
-def menu_kb(user: User) -> ReplyKeyboardMarkup:
-    """Reply-клавиатура с учётом прав администратора."""
-    if user.is_admin:
-        return admin_menu_kb()
-    return main_menu_kb()
+def unpack_event(
+    event: Message | CallbackQuery,
+) -> tuple[Message | None, TgUser | None]:
+    """Сообщение и пользователь без ответа Telegram."""
+    if isinstance(event, CallbackQuery):
+        message = event.message if isinstance(event.message, Message) else None
+        return message, event.from_user
+    return event, event.from_user
+
+
+async def ack_event(
+    event: Message | CallbackQuery,
+) -> tuple[Message | None, TgUser | None]:
+    """Для callback отвечает Telegram и возвращает сообщение + пользователя."""
+    if isinstance(event, CallbackQuery):
+        await event.answer()
+    return unpack_event(event)
+
+
+def _is_button_type_invalid(exc: TelegramBadRequest) -> bool:
+    """Telegram отклонил тип кнопки (часто WebApp без /setdomain)."""
+    return "button_type_invalid" in str(exc).lower()
+
+
+async def _send_or_edit(
+    message: Message,
+    text: str,
+    reply_markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | None,
+    *,
+    edit: bool,
+) -> Message:
+    """Отправляет или правит сообщение; WebApp-кнопки при отказе заменяются ссылкой."""
+    try:
+        if edit:
+            return await message.edit_text(text, reply_markup=reply_markup)
+        return await message.answer(text, reply_markup=reply_markup)
+    except TelegramBadRequest as exc:
+        if "message is not modified" in str(exc).lower():
+            return message
+        if _is_button_type_invalid(exc) and isinstance(reply_markup, InlineKeyboardMarkup):
+            fallback = webapp_to_url_markup(reply_markup)
+            if fallback is not reply_markup:
+                logger.warning(
+                    "Telegram отклонил WebApp-кнопку. "
+                    "Привяжите домен Mini App к боту в BotFather (/setdomain). "
+                    "Повтор со ссылкой."
+                )
+                return await _send_or_edit(message, text, fallback, edit=edit)
+        if edit:
+            return await _send_or_edit(message, text, reply_markup, edit=False)
+        raise
+
+
+async def show_screen(
+    event: Message | CallbackQuery,
+    text: str,
+    reply_markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | None = None,
+) -> Message | None:
+    """При нажатии inline-кнопки редактирует текущее сообщение, иначе отправляет новое."""
+    if isinstance(event, CallbackQuery):
+        message = event.message if isinstance(event.message, Message) else None
+        if message is None:
+            return None
+        if isinstance(reply_markup, (ReplyKeyboardMarkup, ReplyKeyboardRemove)):
+            return await message.answer(text, reply_markup=reply_markup)
+        return await _send_or_edit(message, text, reply_markup, edit=True)
+    return await _send_or_edit(event, text, reply_markup, edit=False)
 
 
 async def safe_send(
@@ -67,10 +120,10 @@ async def safe_send(
     """Отправляет сообщение; ошибки доставки только логируются."""
     try:
         await bot.send_message(chat_id, text, **kwargs)
-        return True
     except TelegramAPIError:
         logger.warning("Не удалось отправить сообщение chat_id=%s", chat_id, exc_info=True)
         return False
+    return True
 
 
 def _display_name(tg_user: TgUser) -> str:
@@ -111,29 +164,59 @@ async def get_or_create_user(session: AsyncSession, tg_user: TgUser) -> tuple[Us
 
 
 async def require_client(
-    message: Message,
+    event: Message | CallbackQuery,
     session: AsyncSession,
     tg_user: TgUser,
 ) -> User | None:
-    """Готовый к работе клиент либо ответ с просьбой о телефоне / блокировке."""
+    """Клиент без блокировки. Телефон на входе не требуется."""
     user, _created = await get_or_create_user(session, tg_user)
     if user.is_blocked:
-        await message.answer(USER_BLOCKED.format(phone=settings.service_phone))
-        return None
-    if not user.phone:
-        await message.answer(SHARE_PHONE_REQUEST, reply_markup=phone_request_kb())
+        await show_screen(event, USER_BLOCKED.format(phone=settings.service_phone))
         return None
     return user
 
 
-async def send_main_screen(message: Message, user: User) -> None:
-    """Приветствие и меню: у админа клавиатура админ-панели."""
-    greeting = START_GREETING.format(service_name=settings.service_name)
-    if user.is_admin:
-        await message.answer(greeting, reply_markup=main_menu_kb())
-        await message.answer(ADMIN_MENU, reply_markup=admin_menu_kb())
-        return
-    await message.answer(greeting, reply_markup=main_menu_kb())
+def start_text() -> str:
+    """Приветствие главного экрана."""
+    return START_GREETING.format(service_name=settings.service_name)
+
+
+async def send_main_screen(event: Message | CallbackQuery, user: User) -> None:
+    """Показывает клиентское меню."""
+    await show_screen(event, start_text(), menu_kb(user))
+
+
+async def admin_home_kb(session: AsyncSession) -> InlineKeyboardMarkup:
+    """Админ-меню с актуальным числом новых заявок."""
+    return admin_menu_kb(new_count=await RequestRepo.count_new(session))
+
+
+async def show_admin_home(event: Message | CallbackQuery, session: AsyncSession) -> None:
+    """Корень админ-панели."""
+    await show_screen(
+        event,
+        ADMIN_MENU.format(service_name=settings.service_name),
+        await admin_home_kb(session),
+    )
+
+
+async def answer_with_menu(
+    event: Message | CallbackQuery,
+    user: User,
+    text: str,
+) -> None:
+    """Ответ клиенту с главным меню."""
+    await show_screen(event, text, menu_kb(user))
+
+
+async def setup_menu_button(bot: Bot) -> None:
+    """Системная кнопка меню слева от поля ввода открывает Mini App."""
+    try:
+        await bot.set_chat_menu_button(
+            menu_button=MenuButtonWebApp(text="Записаться", web_app=webapp_info())
+        )
+    except TelegramAPIError:
+        logger.warning("Не удалось установить Menu Button WebApp", exc_info=True)
 
 
 @router.message(CommandStart())
@@ -144,13 +227,11 @@ async def cmd_start(
     state: FSMContext,
     bot: Bot,
 ) -> None:
-    """Регистрирует пользователя, обрабатывает реферальный deep-link и показывает меню."""
+    """Регистрирует пользователя, обрабатывает реферал и показывает витрину."""
     if message.from_user is None:
         return
     await state.clear()
     ref_code = parse_ref_code(command.args)
-    if ref_code is not None:
-        await state.update_data(ref_code=ref_code)
 
     user, created = await get_or_create_user(session, message.from_user)
     if created and ref_code is not None:
@@ -163,61 +244,4 @@ async def cmd_start(
     if user.is_blocked:
         await message.answer(USER_BLOCKED.format(phone=settings.service_phone))
         return
-    if not user.phone:
-        await message.answer(SHARE_PHONE_REQUEST, reply_markup=phone_request_kb())
-        return
     await send_main_screen(message, user)
-
-
-@router.message(F.contact)
-async def handle_contact(message: Message, session: AsyncSession) -> None:
-    """Сохраняет телефон из кнопки «поделиться контактом»."""
-    if message.from_user is None or message.contact is None:
-        return
-    contact = message.contact
-    if contact.user_id not in (None, 0, message.from_user.id):
-        await message.answer(ERROR_PHONE_INVALID, reply_markup=phone_request_kb())
-        return
-    phone = normalize_phone(contact.phone_number)
-    if phone is None:
-        await message.answer(ERROR_PHONE_INVALID, reply_markup=phone_request_kb())
-        return
-    await _save_phone_and_greet(message, session, phone)
-
-
-@router.message(StateFilter(None), WaitingPhoneFilter())
-async def handle_typed_phone(message: Message, session: AsyncSession) -> None:
-    """Принимает номер, введённый текстом, если телефона ещё нет."""
-    if message.from_user is None or message.text is None:
-        return
-    user = await UserRepo.get_by_tg_id(session, message.from_user.id)
-    if user is not None and user.phone:
-        return
-    phone = normalize_phone(message.text)
-    if phone is None:
-        await message.answer(ERROR_PHONE_INVALID, reply_markup=phone_request_kb())
-        return
-    await _save_phone_and_greet(message, session, phone)
-
-
-async def _save_phone_and_greet(
-    message: Message,
-    session: AsyncSession,
-    phone: str,
-) -> None:
-    """Пишет телефон в профиль и открывает меню."""
-    if message.from_user is None:
-        return
-    user, _created = await get_or_create_user(session, message.from_user)
-    if user.is_blocked:
-        await message.answer(USER_BLOCKED.format(phone=settings.service_phone))
-        return
-    await UserRepo.update_phone(session, user.tg_id, phone)
-    await session.refresh(user)
-    await message.answer(PHONE_RECEIVED)
-    await send_main_screen(message, user)
-
-
-async def answer_with_menu(message: Message, user: User, text: str) -> None:
-    """Ответ клиенту с подходящей reply-клавиатурой."""
-    await message.answer(text, reply_markup=menu_kb(user))

@@ -53,23 +53,6 @@ class AdminAddAdminStates(StatesGroup):
 
 
 class AdminBonusStates(StatesGroup):
-    """Ручная выдача бонуса клиенту."""
+    """Ручное начисление бонусов клиенту."""
 
-    enter_bonus_text = State()
-
-
-class AdminPickStates(StatesGroup):
-    """Выбор элемента списка с reply-кнопок."""
-
-    requests_new = State()
-    requests_done = State()
-    request_actions = State()
-    clients = State()
-    client_card = State()
-    service_cats = State()
-    services = State()
-    service_item = State()
-    promos = State()
-    promo_item = State()
-    admins = State()
-    settings = State()
+    enter_amount = State()

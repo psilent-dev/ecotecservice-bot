@@ -4,25 +4,32 @@ from states.admin import (
     AdminAddAdminStates,
     AdminBonusStates,
     AdminBroadcastStates,
-    AdminPickStates,
     AdminPromoStates,
     AdminReplyStates,
     AdminSearchStates,
     AdminServiceStates,
 )
-from states.client import BookingStates, PriceStates, ProfileStates, QuestionStates
+from states.client import (
+    BookingStates,
+    MiniAppTicketStates,
+    PriceStates,
+    ProfileStates,
+    QuestionStates,
+    QuickBookingStates,
+)
 
 __all__ = [
     "AdminAddAdminStates",
     "AdminBonusStates",
     "AdminBroadcastStates",
-    "AdminPickStates",
     "AdminPromoStates",
     "AdminReplyStates",
     "AdminSearchStates",
     "AdminServiceStates",
     "BookingStates",
+    "MiniAppTicketStates",
     "PriceStates",
     "ProfileStates",
     "QuestionStates",
+    "QuickBookingStates",
 ]

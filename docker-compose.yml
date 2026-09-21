@@ -4,7 +4,7 @@ services:
     build: .
     container_name: ecotec_bot
     restart: unless-stopped
-    env_file: .env
+    env_file: .env  # BOT_TOKEN, ADMIN_CHAT_ID — те же имена, что на сайте Mini App
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs

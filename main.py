@@ -18,7 +18,6 @@ from aiogram.types import ErrorEvent
 
 from config import settings
 from database.base import close_db, init_db
-from handlers.admin_admins import router as admin_admins_router
 from handlers.admin_broadcast import router as admin_broadcast_router
 from handlers.admin_entry import router as admin_entry_router
 from handlers.admin_extra import (
@@ -32,10 +31,10 @@ from handlers.admin_services import router as admin_services_router
 from handlers.booking import router as booking_router
 from handlers.contacts import router as contacts_router
 from handlers.fallback import router as fallback_router
-from handlers.price_request import router as price_request_router
+from handlers.miniapp_ticket import router as miniapp_ticket_router
 from handlers.profile import router as profile_router
 from handlers.question import router as question_router
-from handlers.start import router as start_router
+from handlers.start import router as start_router, setup_menu_button
 from middlewares.db import DbSessionMiddleware
 from middlewares.throttling import ThrottlingMiddleware
 from services.scheduler import init_scheduler, shutdown_scheduler
@@ -87,10 +86,9 @@ def setup_dispatcher() -> Dispatcher:
     dispatcher.include_router(admin_broadcast_router)
     dispatcher.include_router(admin_services_router)
     dispatcher.include_router(admin_promo_router)
-    dispatcher.include_router(admin_admins_router)
     dispatcher.include_router(admin_extra_router)
     dispatcher.include_router(booking_router)
-    dispatcher.include_router(price_request_router)
+    dispatcher.include_router(miniapp_ticket_router)
     dispatcher.include_router(question_router)
     dispatcher.include_router(profile_router)
     dispatcher.include_router(contacts_router)
@@ -141,6 +139,14 @@ async def main() -> None:
 
     await init_db()
     init_scheduler(bot)
+    await setup_menu_button(bot)
+    if settings.admin_chat_id is None:
+        logger.error(
+            "ADMIN_CHAT_ID не задан в .env. Заявки не будут приходить в админ-чат. "
+            "Укажите ID группы (обычно -100…) — тот же, что на сайте Mini App."
+        )
+    else:
+        logger.info("Заявки отправляются в админ-чат %s", settings.admin_chat_id)
     logger.info("Бот запущен")
     while True:
         try:

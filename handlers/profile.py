@@ -1,31 +1,17 @@
-"""Профиль клиента и подробности бонусов."""
+"""Профиль и бонусы клиента."""
 
 from __future__ import annotations
 
 from aiogram import F, Router
-from aiogram.types import Message
+from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
 from database.models import User
-from database.repo import PromoRepo, UserRepo
-from handlers.start import menu_kb, require_client
-from texts import (
-    BONUS_DETAIL_FREE_DIAG,
-    BONUS_DETAIL_LOYALTY,
-    BONUS_DETAIL_REFERRAL,
-    BONUS_DETAILS,
-    BONUS_EMPTY,
-    BONUS_FREE_DIAG,
-    BONUS_LOYALTY_2ND,
-    BONUS_REFERRAL_10,
-    BONUSES_NO_PROMOS,
-    BONUSES_PROMO_ITEM,
-    BONUSES_PROMO_UNLIMITED,
-    MENU_BUTTONS,
-    PROFILE_NO_PHONE,
-    PROFILE_TEXT,
-)
+from handlers.start import ack_event, menu_kb, require_client, show_screen, start_text
+from keyboards.inline import MenuCB, NavCB, bonuses_kb
+from texts import BONUSES_CARD, INVITE_SHARE_TEXT, MENU_BUTTONS, PHONE_NOT_BOUND
+from utils.validators import format_phone_display
 
 router = Router(name="profile")
 
@@ -35,86 +21,44 @@ def referral_link(user: User) -> str:
     return f"https://t.me/{settings.bot_username}?start=ref_{user.referral_code}"
 
 
-def bonus_lines(user: User) -> str:
-    """Краткий список активных бонусов для карточки профиля."""
-    lines: list[str] = []
-    if user.loyalty_discount_2nd:
-        lines.append(BONUS_LOYALTY_2ND)
-    if user.discount_10_active:
-        lines.append(BONUS_REFERRAL_10)
-    if user.free_diagnostics:
-        lines.append(BONUS_FREE_DIAG)
-    return "\n".join(lines) if lines else BONUS_EMPTY
-
-
-async def build_profile_text(session: AsyncSession, user: User) -> str:
-    """Карточка профиля: контакты, визиты, бонусы и реферальная ссылка."""
-    count = await UserRepo.get_referral_count(session, user.id)
-    return PROFILE_TEXT.format(
+def bonuses_text(user: User) -> str:
+    """Карточка бонусов."""
+    return BONUSES_CARD.format(
         full_name=user.full_name,
-        phone=user.phone or PROFILE_NO_PHONE,
+        phone=format_phone_display(user.phone) or PHONE_NOT_BOUND,
+        balance=user.bonus_balance,
         visits=user.visits_count,
-        refs=count,
-        bonuses=bonus_lines(user),
         ref_link=referral_link(user),
     )
 
 
-async def build_bonuses_details(session: AsyncSession, user: User) -> str:
-    """Подробное описание активных наград и текущих акций."""
-    blocks: list[str] = []
-    if user.loyalty_discount_2nd:
-        blocks.append(BONUS_DETAIL_LOYALTY)
-    if user.discount_10_active:
-        blocks.append(BONUS_DETAIL_REFERRAL)
-    if user.free_diagnostics:
-        blocks.append(BONUS_DETAIL_FREE_DIAG)
-    if not blocks:
-        blocks.append(BONUS_EMPTY)
-
-    promos = await PromoRepo.get_active(session)
-    if promos:
-        for promo in promos:
-            until = (
-                promo.valid_until.strftime("%d.%m.%Y")
-                if promo.valid_until is not None
-                else BONUSES_PROMO_UNLIMITED
-            )
-            blocks.append(
-                BONUSES_PROMO_ITEM.format(
-                    title=promo.title,
-                    description=promo.description,
-                    discount=promo.discount,
-                    valid_until=until,
-                )
-            )
-    else:
-        blocks.append(BONUSES_NO_PROMOS)
-
-    return BONUS_DETAILS.format(details="\n\n".join(blocks))
-
-
-@router.message(F.text == MENU_BUTTONS["profile"])
-async def show_profile(message: Message, session: AsyncSession) -> None:
-    """Показывает карточку профиля."""
-    if message.from_user is None:
-        return
-    user = await require_client(message, session, message.from_user)
-    if user is None:
-        return
-    text = await build_profile_text(session, user)
-    await message.answer(text, reply_markup=menu_kb(user))
-
-
+@router.callback_query(MenuCB.filter(F.action == "bonuses"))
 @router.message(F.text == MENU_BUTTONS["bonuses"])
-async def show_bonuses(message: Message, session: AsyncSession) -> None:
-    """Подробности по активным бонусам."""
-    if message.from_user is None:
+async def show_bonuses(
+    event: Message | CallbackQuery,
+    session: AsyncSession,
+) -> None:
+    """Показывает бонусы, реферальную ссылку и кнопки."""
+    _message, tg_user = await ack_event(event)
+    if tg_user is None:
         return
-    user = await require_client(message, session, message.from_user)
+    user = await require_client(event, session, tg_user)
     if user is None:
         return
-    await message.answer(
-        await build_bonuses_details(session, user),
-        reply_markup=menu_kb(user),
-    )
+    invite = INVITE_SHARE_TEXT.format(link=referral_link(user))
+    await show_screen(event, bonuses_text(user), bonuses_kb(invite))
+
+
+@router.callback_query(NavCB.filter(F.action == "back"))
+async def back_to_menu(
+    callback: CallbackQuery,
+    session: AsyncSession,
+) -> None:
+    """Возврат в главное меню."""
+    await callback.answer()
+    if callback.from_user is None:
+        return
+    user = await require_client(callback, session, callback.from_user)
+    if user is None:
+        return
+    await show_screen(callback, start_text(), menu_kb(user))
